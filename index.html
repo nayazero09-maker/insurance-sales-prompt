@@ -36,10 +36,19 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   box-shadow:4px 0 24px rgba(0,0,0,.18);
 }
 .sb-header{padding:22px 18px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
-.logo{display:flex;align-items:center;gap:10px}
-.logo-icon{width:38px;height:38px;background:var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.logo{display:flex;align-items:center;gap:11px}
+.logo-icon{width:42px;height:42px;background:linear-gradient(135deg,#f5c842,#e8960a);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:0;flex-shrink:0;box-shadow:0 3px 10px rgba(232,150,10,.45),inset 0 1px 0 rgba(255,255,255,.3);position:relative;overflow:hidden}
+.logo-icon::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.25) 0%,transparent 60%)}
+.logo-icon svg{width:24px;height:24px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))}
 .logo-text{font-size:15px;font-weight:700;line-height:1.25}
 .logo-sub{font-size:10px;opacity:.5;font-weight:300;letter-spacing:.8px;margin-top:2px}
+/* theme picker */
+.theme-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px}
+.theme-swatch{border-radius:8px;padding:6px 4px;text-align:center;cursor:pointer;border:2px solid transparent;transition:.15s;background:var(--card)}
+.theme-swatch:hover{border-color:rgba(0,0,0,.25);transform:translateY(-1px)}
+.theme-swatch.selected{border-color:#7c4dff;box-shadow:0 0 0 2px rgba(124,77,255,.3)}
+.theme-swatch .ts-dot{width:22px;height:22px;border-radius:50%;margin:0 auto 3px;display:flex;align-items:center;justify-content:center}
+.theme-swatch .ts-name{font-size:9px;color:var(--muted);line-height:1.2;word-break:keep-all}
 /* agent card */
 .agent-card{margin:14px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px;cursor:pointer;transition:.2s}
 .agent-card:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.22)}
@@ -291,7 +300,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 <aside class="sidebar">
   <div class="sb-header">
     <div class="logo">
-      <div class="logo-icon">🔑</div>
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L4 6v6c0 5.25 3.4 10.15 8 11.35C16.6 22.15 20 17.25 20 12V6l-8-4z" fill="rgba(255,255,255,0.9)"/>
+          <path d="M9 12l2 2 4-4" stroke="#e8960a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
       <div>
         <div class="logo-text">보험 영업 치트키</div>
         <div class="logo-sub">INSURANCE CHEAT KEY</div>
@@ -496,6 +510,15 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
               <label class="fl">보험 설계안 내용 붙여넣기 <span class="req">*</span></label>
               <textarea class="fta" id="c_plan_text" style="min-height:140px" placeholder="보험 설계안의 주요 내용을 복사하여 붙여넣으세요.&#10;(상품명, 보험료, 보장 항목, 특약 내용 등)"></textarea>
             </div>
+          </div>
+
+          <!-- 컬러 테마 선택 -->
+          <div class="fg" style="margin-top:16px">
+            <label class="fl" style="display:flex;align-items:center;gap:7px;margin-bottom:0">
+              🎨 제안서 컬러 테마
+              <span style="font-size:10px;color:var(--muted);font-weight:400">출력 HTML의 색상 테마를 선택하세요</span>
+            </label>
+            <div class="theme-grid" id="themeGrid"></div>
           </div>
 
           <div class="gen-wrap">
@@ -1032,6 +1055,23 @@ let agent = null;
 let photoB64 = '';
 let promptText = '';
 let curCat = 1;
+let selectedThemeId = 't1';
+
+// ── Color Themes (GEMS 10종) ──
+const THEMES = [
+  {id:'t1',  name:'블루-그레이',   primary:'#1a73e8', grad:'#004d99', infoBg:'#e8f4fd', infoLeft:'#1a73e8', tblHdr:'#f5f5f5', tblAlt:'#f0f4ff', textAcc:'#1a73e8'},
+  {id:'t2',  name:'그린-오렌지',   primary:'#28a745', grad:'#1e7e34', infoBg:'#e8f5e9', infoLeft:'#28a745', tblHdr:'#e8f5e9', tblAlt:'#edf7ed', textAcc:'#1e7e34'},
+  {id:'t3',  name:'퍼플-옐로우',   primary:'#6a1b9a', grad:'#4a148c', infoBg:'#f3e5f5', infoLeft:'#9575cd', tblHdr:'#ede7f6', tblAlt:'#f3e5f5', textAcc:'#6a1b9a'},
+  {id:'t4',  name:'틸-그레이',     primary:'#00796b', grad:'#004d40', infoBg:'#e0f7fa', infoLeft:'#26c6da', tblHdr:'#e0f7fa', tblAlt:'#e8f5f5', textAcc:'#00796b'},
+  {id:'t5',  name:'테라코타',      primary:'#a0522d', grad:'#8b4513', infoBg:'#f4f4f4', infoLeft:'#d2b48c', tblHdr:'#f4f4f4', tblAlt:'#faf5f0', textAcc:'#a0522d'},
+  {id:'t6',  name:'클래식 블루',   primary:'#1565c0', grad:'#0d47a1', infoBg:'#e3f2fd', infoLeft:'#1565c0', tblHdr:'#e3f2fd', tblAlt:'#f5f9ff', textAcc:'#1565c0'},
+  {id:'t7',  name:'네이처 그린',   primary:'#2e7d32', grad:'#1b5e20', infoBg:'#e8f5e9', infoLeft:'#43a047', tblHdr:'#f1f8f2', tblAlt:'#e8f5e9', textAcc:'#2e7d32'},
+  {id:'t8',  name:'로얄 퍼플',     primary:'#7b1fa2', grad:'#4a148c', infoBg:'#f3e5f5', infoLeft:'#ab47bc', tblHdr:'#ede7f6', tblAlt:'#f3e5f5', textAcc:'#7b1fa2'},
+  {id:'t9',  name:'퓨처 틸',       primary:'#00838f', grad:'#006064', infoBg:'#e0f2f1', infoLeft:'#4dd0e1', tblHdr:'#e0f7fa', tblAlt:'#e8f8f7', textAcc:'#00838f'},
+  {id:'t10', name:'어스 브라운',   primary:'#bf360c', grad:'#8b4513', infoBg:'#fff3e0', infoLeft:'#ffb74d', tblHdr:'#fff8f0', tblAlt:'#fff3e0', textAcc:'#bf360c'},
+  {id:'t11', name:'핑크 (여성용)', primary:'#e91e8c', grad:'#c2185b', infoBg:'#fce4ec', infoLeft:'#f48fb1', tblHdr:'#fce4ec', tblAlt:'#fdf0f5', textAcc:'#e91e8c'},
+  {id:'t12', name:'다크 네이비',   primary:'#1a237e', grad:'#0d1b6e', infoBg:'#e8eaf6', infoLeft:'#7b1fa2', tblHdr:'#e8eaf6', tblAlt:'#eef0fa', textAcc:'#1a237e'},
+];
 
 // ── Init ──
 (function init(){
@@ -1039,7 +1079,25 @@ let curCat = 1;
   if(s){ agent = JSON.parse(s); photoB64 = agent.photo||''; }
   renderAgent();
   checkSetup();
+  renderThemePicker();
 })();
+
+function renderThemePicker(){
+  const grid = document.getElementById('themeGrid');
+  if(!grid) return;
+  grid.innerHTML = THEMES.map(t => `
+    <div class="theme-swatch${t.id===selectedThemeId?' selected':''}" onclick="selectTheme('${t.id}')" title="${t.name}">
+      <div class="ts-dot" style="background:linear-gradient(135deg,${t.primary},${t.grad})"></div>
+      <div class="ts-name">${t.name}</div>
+    </div>`).join('');
+}
+
+function selectTheme(id){
+  selectedThemeId = id;
+  document.querySelectorAll('.theme-swatch').forEach(el=>{
+    el.classList.toggle('selected', el.getAttribute('onclick').includes("'"+id+"'"));
+  });
+}
 
 function checkSetup(){
   const has = agent && agent.name;
@@ -1261,9 +1319,8 @@ function doGenerate(){
 
 // ── Prompt Template ──
 function buildPrompt(a, c, faq){
-  const colorNote = c.gender === '여성'
-    ? '핑크 계열 (메인: #e91e8c, 서브: #f48fb1, 배경: #fce4ec)'
-    : '블루·퍼플 계열 (메인: #1a237e, 서브: #7b1fa2, 배경: #e8eaf6)';
+  const th = THEMES.find(t=>t.id===selectedThemeId) || THEMES[0];
+  const colorNote = `${th.name} (메인: ${th.primary}, 그라디언트 끝: ${th.grad}, 정보박스 배경: ${th.infoBg}, 정보박스 왼쪽 테두리: ${th.infoLeft}, 테이블 헤더 배경: ${th.tblHdr}, 테이블 짝수 행 배경: ${th.tblAlt}, 강조 텍스트 색: ${th.textAcc})`;
 
   const faqBlock = faq ? `
 
