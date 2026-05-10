@@ -955,24 +955,30 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
             <!-- 1. HTML 소스 선택 -->
             <div class="fg">
-              <label class="fl">📄 보험 제안서 HTML 소스 <span class="req">*</span></label>
+              <label class="fl">📄 완성된 보험 제안서 HTML 업로드 <span class="req">*</span></label>
 
-              <!-- Cat-1 자동 연결 버튼 -->
-              <button class="cat3-auto-btn" id="cat3AutoBtn" onclick="cat3LoadFromCat1()">
-                🔗 Cat-1 생성 결과 자동 불러오기
-                <span style="font-size:10px;font-weight:400;opacity:.8">(1번 탭에서 AI 직접 생성 시 연결)</span>
-              </button>
-
-              <div style="text-align:center;font-size:11px;color:var(--muted);margin:10px 0">— 또는 완성된 HTML 파일 직접 업로드 —</div>
+              <!-- 사전 준비 안내 박스 -->
+              <div class="ibox" style="background:#e8f5e9;border-left-color:#2e7d32;margin-bottom:10px">
+                <p style="font-size:12px;color:#1b5e20;line-height:1.8;margin:0">
+                  <strong>📋 업로드 전 사전 준비</strong><br>
+                  아래 순서로 완성된 HTML 파일을 먼저 준비하세요:
+                </p>
+                <ol style="margin:8px 0 0 16px;font-size:12px;color:#2e7d32;line-height:2">
+                  <li><strong>Cat-1</strong>에서 프롬프트 생성 → HTML 파일 다운로드</li>
+                  <li><a href="https://claude.ai" target="_blank" rel="noopener" style="color:#2e7d32;font-weight:700">Claude AI →</a>에 ① Cat-1 HTML 파일 + ② 고객 <strong>가입설계 PDF</strong> 함께 업로드</li>
+                  <li>Claude가 두 파일을 분석하여 생성한 <strong>완성 보험 제안서 HTML</strong>을 저장</li>
+                  <li>저장한 HTML 파일을 아래에 업로드</li>
+                </ol>
+              </div>
 
               <!-- 파일 업로드 드롭존 -->
-              <label class="plan-upload-zone" id="cat3UploadZone">
+              <label class="plan-upload-zone" id="cat3UploadZone" style="border-color:#7b1fa2">
                 <input type="file" id="cat3FileInput" accept=".html,.htm,.txt">
                 <div class="plan-upload-icon">📂</div>
                 <div>
                   <div class="plan-upload-label">
-                    <strong>HTML / TXT 파일 업로드</strong>
-                    클릭하여 선택 또는 드래그 앤 드롭
+                    <strong>완성된 보험 제안서 HTML 파일 업로드</strong>
+                    Claude AI가 생성한 보험 제안서 HTML을 선택하거나 드래그 앤 드롭
                   </div>
                   <div class="plan-file-name" id="cat3FileName"></div>
                 </div>
@@ -1045,60 +1051,94 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
         <!-- ── RIGHT: 사용 방법 ── -->
         <div class="wf-card">
           <div class="wf-title">사용 방법 — 워크플로우</div>
-          <div class="wf-steps">
+
+          <!-- PHASE 1: 완성 HTML 준비 -->
+          <div style="font-size:10px;font-weight:800;color:#2e7d32;letter-spacing:.8px;margin-bottom:6px;padding:4px 10px;background:#e8f5e9;border-radius:6px;display:inline-block">PHASE 1 · 완성 보험 제안서 HTML 준비</div>
+          <div class="wf-steps" style="margin-bottom:14px">
 
             <div class="wf-step">
-              <div class="wf-num">1</div>
+              <div class="wf-num" style="background:#2e7d32">1</div>
               <div class="wf-body">
-                <div class="wf-head">HTML 소스 준비</div>
-                <div class="wf-desc">Cat-1에서 AI로 생성한 제안서를 <strong>"자동 불러오기"</strong>로 연결하거나, 기존에 완성된 보험 제안서 HTML 파일을 직접 업로드하세요.</div>
+                <div class="wf-head">Cat-1에서 프롬프트 HTML 다운로드</div>
+                <div class="wf-desc"><strong>1번 탭(고객 맞춤형 보험 설계서)</strong>에서 고객 정보를 입력하고 <strong>"✨ 프롬프트 생성"</strong> 후 HTML 파일을 다운로드하세요.</div>
               </div>
             </div>
 
             <div class="wf-step">
-              <div class="wf-num">2</div>
+              <div class="wf-num" style="background:#2e7d32">2</div>
               <div class="wf-body">
-                <div class="wf-head">PPT 스타일 설정</div>
-                <div class="wf-desc">슬라이드 수(8~15장), 디자인 스타일(전문·모던·심플), 화면 비율(16:9/4:3), 컬러 테마를 선택하세요.</div>
+                <div class="wf-head">Claude AI에 두 파일 함께 업로드</div>
+                <div class="wf-desc">
+                  <a href="https://claude.ai" target="_blank" rel="noopener" style="color:#2e7d32;font-weight:700">claude.ai →</a>에서
+                  <strong>Sonnet 4.6 이상</strong> 선택 후<br>
+                  ① Cat-1 프롬프트 HTML&nbsp;&nbsp;+&nbsp;&nbsp;② 고객 <strong>가입설계 PDF</strong><br>
+                  두 파일을 <strong>함께 첨부</strong>하여 전송하세요.
+                </div>
               </div>
             </div>
 
             <div class="wf-step">
-              <div class="wf-num">3</div>
+              <div class="wf-num" style="background:#2e7d32">3</div>
               <div class="wf-body">
-                <div class="wf-head">프롬프트 생성 & 다운로드</div>
-                <div class="wf-desc">"📊 PPT 프롬프트 생성" 클릭 시 Claude AI 전용 지시문 HTML 파일이 다운로드됩니다.</div>
+                <div class="wf-head">완성 보험 제안서 HTML 저장</div>
+                <div class="wf-desc">Claude가 두 파일을 분석하여 생성한 <strong>완성 보험 제안서 HTML</strong>을 캔버스에서 확인 후 <strong>HTML 파일로 저장</strong>하세요.</div>
               </div>
             </div>
+
+          </div>
+
+          <!-- PHASE 2: PPT 생성 -->
+          <div style="font-size:10px;font-weight:800;color:#7b1fa2;letter-spacing:.8px;margin-bottom:6px;padding:4px 10px;background:#f5edff;border-radius:6px;display:inline-block">PHASE 2 · PPT 프롬프트 생성 & 다운로드</div>
+          <div class="wf-steps" style="margin-bottom:14px">
 
             <div class="wf-step">
               <div class="wf-num">4</div>
               <div class="wf-body">
-                <div class="wf-head">Claude AI 접속 & 업로드</div>
-                <div class="wf-desc">
-                  <a href="https://claude.ai" target="_blank" rel="noopener" style="color:#7b1fa2;font-weight:700">claude.ai →</a>에서
-                  <strong>Claude Sonnet 4.6 이상</strong> 모델 선택 후 다운로드된 HTML 파일을 첨부·전송하세요.
-                </div>
+                <div class="wf-head">완성 HTML 파일 업로드</div>
+                <div class="wf-desc">Phase 1에서 저장한 <strong>완성 보험 제안서 HTML</strong>을 왼쪽 업로드 영역에 올려주세요.</div>
               </div>
             </div>
 
             <div class="wf-step">
               <div class="wf-num">5</div>
               <div class="wf-body">
-                <div class="wf-head">캔버스에서 PPT 확인 & .pptx 저장</div>
-                <div class="wf-desc">Claude가 캔버스에 전문 PPT 슬라이드 HTML을 생성합니다. 슬라이드 내 <strong>"📥 PPT 다운로드"</strong> 버튼으로 .pptx 파일을 저장하세요.</div>
+                <div class="wf-head">PPT 스타일 설정 후 프롬프트 생성</div>
+                <div class="wf-desc">슬라이드 수, 디자인 스타일, 비율, 컬러 테마를 선택한 뒤 <strong>"📊 PPT 프롬프트 생성"</strong>을 클릭하면 지시문 HTML 파일이 다운로드됩니다.</div>
               </div>
             </div>
 
-            <!-- Step 6: ChatGPT 업그레이드 -->
+            <div class="wf-step">
+              <div class="wf-num">6</div>
+              <div class="wf-body">
+                <div class="wf-head">Claude AI에 PPT 지시문 업로드</div>
+                <div class="wf-desc">
+                  <a href="https://claude.ai" target="_blank" rel="noopener" style="color:#7b1fa2;font-weight:700">claude.ai →</a>에서
+                  <strong>Sonnet 4.6 이상</strong> 선택 후 다운로드된 PPT 지시문 HTML을 첨부·전송하세요.
+                </div>
+              </div>
+            </div>
+
+            <div class="wf-step">
+              <div class="wf-num">7</div>
+              <div class="wf-body">
+                <div class="wf-head">캔버스에서 PPT 확인 & .pptx 저장</div>
+                <div class="wf-desc">Claude가 캔버스에 PPT 슬라이드를 생성합니다. <strong>"📥 PPT 다운로드"</strong> 버튼으로 .pptx 파일을 저장하세요.</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- PHASE 3: ChatGPT PRO 업그레이드 -->
+          <div style="font-size:10px;font-weight:800;color:#e67700;letter-spacing:.8px;margin-bottom:6px;padding:4px 10px;background:#fff3cd;border-radius:6px;display:inline-block">PHASE 3 · 선택 · PRO 업그레이드</div>
+          <div class="wf-steps">
+
             <div class="wf-step" style="position:relative">
-              <div class="wf-num" style="background:linear-gradient(135deg,#f59f00,#e67700);flex-shrink:0">6</div>
+              <div class="wf-num" style="background:linear-gradient(135deg,#f59f00,#e67700);flex-shrink:0">8</div>
               <div class="wf-body">
                 <div class="wf-head" style="display:flex;align-items:center;gap:6px">
                   ✨ ChatGPT로 이미지·그래프 업그레이드
-                  <span style="background:linear-gradient(135deg,#f59f00,#e67700);color:#fff;font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:.3px">선택 · PRO</span>
                 </div>
-                <div class="wf-desc">완성된 .pptx 파일을 ChatGPT 유료 추론 모델에 업로드하여 맞춤 이미지·그래프를 추가하면 더욱 생동감 있는 PPT가 완성됩니다.</div>
+                <div class="wf-desc">완성된 .pptx 파일을 ChatGPT 유료 추론 모델(o1/o3/o4-mini)에 업로드하여 맞춤 이미지·그래프를 추가하면 더욱 생동감 있는 PPT가 완성됩니다.</div>
               </div>
             </div>
 
@@ -2725,6 +2765,9 @@ let _pptFileContent = '';
   setupCat3Upload();
 })();
 
+// (사용 안 함 — Cat-1 자동 연결 방식 제거됨)
+// function cat3LoadFromCat1() { ... }
+
 function renderPptThemePicker(){
   const grid = document.getElementById('pptThemeGrid');
   if(!grid) return;
@@ -2746,17 +2789,6 @@ function selectPptStyle(el, style){
   document.querySelectorAll('.ppt-style-opt').forEach(o=>o.classList.remove('selected'));
   el.classList.add('selected');
   pptStyleSel = style;
-}
-
-function cat3LoadFromCat1(){
-  if(!_apiGeneratedHtml){
-    showToast('Cat-1 탭에서 먼저 "🤖 AI 직접 생성"을 실행해주세요.', '#ef4444');
-    return;
-  }
-  pptHtmlSource = _apiGeneratedHtml;
-  pptSourceName = '보험제안서_' + (_apiCustomerName||'고객');
-  showCat3SourceInfo('✅ Cat-1 생성 결과 자동 연결 (' + (_apiCustomerName||'고객') + ')', pptHtmlSource);
-  showToast('Cat-1 보험 제안서가 연결되었습니다!', '#7b1fa2');
 }
 
 function showCat3SourceInfo(filename, html){
