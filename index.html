@@ -1085,13 +1085,26 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
             <div class="wf-step">
               <div class="wf-num">5</div>
               <div class="wf-body">
-                <div class="wf-head">캔버스에서 PPT 확인 & 다운로드</div>
+                <div class="wf-head">캔버스에서 PPT 확인 & .pptx 저장</div>
                 <div class="wf-desc">Claude가 캔버스에 전문 PPT 슬라이드 HTML을 생성합니다. 슬라이드 내 <strong>"📥 PPT 다운로드"</strong> 버튼으로 .pptx 파일을 저장하세요.</div>
+              </div>
+            </div>
+
+            <!-- Step 6: ChatGPT 업그레이드 -->
+            <div class="wf-step" style="position:relative">
+              <div class="wf-num" style="background:linear-gradient(135deg,#f59f00,#e67700);flex-shrink:0">6</div>
+              <div class="wf-body">
+                <div class="wf-head" style="display:flex;align-items:center;gap:6px">
+                  ✨ ChatGPT로 이미지·그래프 업그레이드
+                  <span style="background:linear-gradient(135deg,#f59f00,#e67700);color:#fff;font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:.3px">선택 · PRO</span>
+                </div>
+                <div class="wf-desc">완성된 .pptx 파일을 ChatGPT 유료 추론 모델에 업로드하여 맞춤 이미지·그래프를 추가하면 더욱 생동감 있는 PPT가 완성됩니다.</div>
               </div>
             </div>
 
           </div>
 
+          <!-- 기본 팁 -->
           <div class="ibox" style="background:#f5edff;border-left-color:#7b1fa2;margin-top:16px">
             <p>💡 <strong>더 좋은 PPT를 위한 팁</strong></p>
             <ul style="margin:6px 0 0 16px;font-size:12px;line-height:1.9;color:#4a148c">
@@ -1101,7 +1114,61 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
               <li>Claude 캔버스에서 "전체 화면" 버튼으로 프레젠테이션 모드 전환</li>
             </ul>
           </div>
-        </div>
+
+          <!-- ✨ ChatGPT PRO 업그레이드 카드 -->
+          <div style="margin-top:14px;border-radius:12px;overflow:hidden;border:2px solid #f59f00;box-shadow:0 4px 16px rgba(245,159,0,.18)">
+            <!-- 헤더 -->
+            <div style="background:linear-gradient(135deg,#f59f00,#e67700);padding:13px 18px;color:#fff;display:flex;align-items:center;gap:10px">
+              <span style="font-size:22px">✨</span>
+              <div>
+                <div style="font-size:13px;font-weight:800;letter-spacing:.2px">PRO 업그레이드 — 생동감 있는 맞춤 이미지 PPT</div>
+                <div style="font-size:11px;opacity:.92;margin-top:2px">ChatGPT 유료버전 추론 모델로 이미지·그래프를 강화하세요</div>
+              </div>
+            </div>
+
+            <!-- 본문 -->
+            <div style="background:#fff8e1;padding:14px 16px">
+              <!-- 단계 안내 -->
+              <div style="font-size:12px;color:#5d4037;line-height:2;margin-bottom:12px">
+                <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:4px">
+                  <span style="background:#f59f00;color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:9px;flex-shrink:0;margin-top:3px">①</span>
+                  <span>완성된 <strong>.pptx 파일</strong>을
+                    <a href="https://chatgpt.com" target="_blank" rel="noopener"
+                       style="color:#e67700;font-weight:800;text-decoration:none;border-bottom:1px solid #e67700">
+                      ChatGPT 유료버전 →
+                    </a>에 업로드
+                  </span>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:4px">
+                  <span style="background:#f59f00;color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:9px;flex-shrink:0;margin-top:3px">②</span>
+                  <span><strong>추론(Reasoning) 모델</strong> 선택 — o1 / o3 / o4-mini 등</span>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:8px">
+                  <span style="background:#f59f00;color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:9px;flex-shrink:0;margin-top:3px">③</span>
+                  <span>아래 프롬프트를 복사하여 입력 후 전송</span>
+                </div>
+              </div>
+
+              <!-- 프롬프트 박스 -->
+              <div style="background:#fff;border:1.5px solid #ffe082;border-radius:10px;padding:14px 16px;position:relative">
+                <div style="font-size:10px;color:#f59f00;font-weight:800;margin-bottom:8px;letter-spacing:.3px">📋 GPT 프롬프트 지침</div>
+                <div id="gptPptPromptText" style="font-size:13px;color:#333;line-height:1.75;font-weight:500;padding-right:60px">
+                  PPT 제작 전문가로서 업로드한 PPT를 보다 생동감 있게 맞춤형 이미지와 그래프 등을 추가해서 풍성하게 변경해주세요
+                </div>
+                <button onclick="copyGptPptPrompt()" style="position:absolute;top:12px;right:12px;background:linear-gradient(135deg,#f59f00,#e67700);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:800;cursor:pointer;transition:.15s"
+                  onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+                  📋 복사
+                </button>
+              </div>
+
+              <!-- 부가 안내 -->
+              <div style="font-size:11px;color:#795548;margin-top:10px;line-height:1.7;padding:8px 12px;background:rgba(245,159,0,.08);border-radius:7px">
+                💬 ChatGPT가 슬라이드별 맞춤 이미지, 인포그래픽, 데이터 차트를 자동으로 추가하여 더욱 전문적인 PPT로 업그레이드합니다.
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /wf-card -->
 
       </div><!-- /grid2 -->
 
@@ -2782,6 +2849,21 @@ function generatePptPrompt(){
 
   // 자동 다운로드
   downloadPptPrompt();
+}
+
+function copyGptPptPrompt(){
+  const txt = document.getElementById('gptPptPromptText')?.innerText?.trim();
+  if(!txt) return;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(txt).then(()=>showToast('✅ GPT 프롬프트가 클립보드에 복사됐습니다!', '#f59f00'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✅ GPT 프롬프트가 클립보드에 복사됐습니다!', '#f59f00');
+  }
 }
 
 function downloadPptPrompt(){
