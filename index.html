@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 보험 영업 프롬프트 생성기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sidebar:280px;
+  --navy:#1a237e;
+  --navy2:#283593;
+  --navy3:#0d1b6b;
+  --gold:#ffd700;
+  --gold2:#ffca28;
+  --bg:#f0f2fa;
+  --white:#ffffff;
+  --text:#1a1a2e;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+  --green:#10b981;
+  --orange:#f59e0b;
+  --red:#ef4444;
+  --pink-main:#e91e8c;
+  --pink-light:#fce4ec;
+}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;font-size:14px}
+/* ── SIDEBAR ── */
+.sidebar{
+  width:var(--sidebar);min-height:100vh;
+  background:linear-gradient(180deg,var(--navy) 0%,var(--navy3) 100%);
+  color:#fff;display:flex;flex-direction:column;
+  position:fixed;left:0;top:0;bottom:0;z-index:100;
+  box-shadow:4px 0 24px rgba(0,0,0,.18);
+}
+.sb-header{padding:22px 18px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:38px;height:38px;background:var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.logo-text{font-size:15px;font-weight:700;line-height:1.25}
+.logo-sub{font-size:10px;opacity:.5;font-weight:300;letter-spacing:.8px;margin-top:2px}
+/* agent card */
+.agent-card{margin:14px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px;cursor:pointer;transition:.2s}
+.agent-card:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.22)}
+.ac-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.ac-label{font-size:10px;opacity:.5;text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.ac-edit{font-size:10px;background:rgba(255,255,255,.12);border:none;color:#fff;padding:3px 8px;border-radius:5px;cursor:pointer;font-family:inherit;transition:.2s}
+.ac-edit:hover{background:rgba(255,255,255,.22)}
+.agent-info-row{display:flex;align-items:center;gap:10px}
+.avatar{width:42px;height:42px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:var(--navy);overflow:hidden;flex-shrink:0;border:2px solid rgba(255,255,255,.2)}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.a-name{font-size:14px;font-weight:700}
+.a-company{font-size:11px;opacity:.55;margin-top:2px}
+.not-set-box{text-align:center;padding:4px 0}
+.not-set-box p{font-size:11px;opacity:.55;margin-bottom:8px}
+.btn-set{background:var(--gold);color:var(--navy);border:none;padding:6px 18px;border-radius:7px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;transition:.2s}
+.btn-set:hover{background:var(--gold2);transform:translateY(-1px)}
+/* nav */
+.sb-nav{flex:1;padding:6px 0;overflow-y:auto}
+.nav-sec{font-size:10px;opacity:.35;text-transform:uppercase;letter-spacing:1.2px;padding:14px 18px 6px;font-weight:700}
+.nav-item{display:flex;align-items:flex-start;gap:12px;padding:10px 18px;cursor:pointer;transition:.18s;border-left:3px solid transparent;margin:1px 0}
+.nav-item:hover:not(.disabled){background:rgba(255,255,255,.07);border-left-color:rgba(255,215,0,.45)}
+.nav-item.active{background:rgba(255,215,0,.1);border-left-color:var(--gold)}
+.nav-item.disabled{opacity:.38;cursor:not-allowed}
+.nav-num{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;margin-top:1px}
+.nav-item.active .nav-num{background:var(--gold);color:var(--navy)}
+.nav-title{font-size:12.5px;font-weight:600;line-height:1.3}
+.nav-desc{font-size:10px;opacity:.48;margin-top:2px}
+.nav-badge{font-size:9px;background:rgba(255,255,255,.1);padding:2px 7px;border-radius:9px;margin-top:4px;display:inline-block}
+.nav-item.active .nav-badge{background:rgba(255,215,0,.2);color:var(--gold)}
+.sb-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.07);font-size:10px;opacity:.3;text-align:center}
+/* ── MAIN ── */
+.main{margin-left:var(--sidebar);flex:1;min-height:100vh;display:flex;flex-direction:column}
+.main-header{background:#fff;padding:18px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 1px 10px rgba(0,0,0,.06)}
+.page-title{font-size:17px;font-weight:800;color:var(--navy)}
+.page-badge{font-size:11px;background:#e8eaf6;color:var(--navy);padding:5px 12px;border-radius:20px;font-weight:700}
+.main-body{flex:1;padding:30px 32px}
+/* setup screen */
+.setup-screen{display:flex;align-items:center;justify-content:center;min-height:65vh}
+.setup-card{background:#fff;border-radius:22px;padding:52px 44px;text-align:center;max-width:460px;width:100%;box-shadow:0 6px 40px rgba(0,0,0,.09)}
+.setup-icon{font-size:60px;margin-bottom:18px}
+.setup-title{font-size:21px;font-weight:800;color:var(--navy);margin-bottom:12px}
+.setup-desc{color:var(--muted);font-size:13.5px;line-height:1.75;margin-bottom:28px}
+/* cat content */
+.cat-content{display:none}
+.cat-content.active{display:block}
+/* grid */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px;max-width:1300px}
+.span2{grid-column:1/-1}
+/* card */
+.card{background:#fff;border-radius:18px;padding:26px;box-shadow:0 2px 14px rgba(0,0,0,.06)}
+.card-title{font-size:14.5px;font-weight:800;color:var(--navy);margin-bottom:20px;display:flex;align-items:center;gap:9px}
+.card-title::before{content:'';width:4px;height:18px;background:var(--gold);border-radius:2px;flex-shrink:0}
+/* form */
+.fg{margin-bottom:15px}
+.fl{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.fl .req{color:var(--red);margin-left:2px}
+.fi,.fs,.fta{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;color:var(--text);background:#fff;transition:.2s;outline:none}
+.fi:focus,.fs:focus,.fta:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(26,35,126,.09)}
+.fta{resize:vertical;min-height:78px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+/* radio */
+.rgroup{display:flex;gap:10px}
+.ropt{flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border:1.5px solid var(--border);border-radius:9px;cursor:pointer;transition:.2s}
+.ropt:has(input:checked){border-color:var(--navy);background:#e8eaf6}
+.ropt input{accent-color:var(--navy);cursor:pointer}
+.ropt label{cursor:pointer;font-size:13px;font-weight:600}
+/* info box */
+.ibox{background:#e8f5e9;border-left:4px solid #4caf50;padding:11px 15px;border-radius:0 9px 9px 0;margin-bottom:18px}
+.ibox p{font-size:12px;color:#2e7d32;line-height:1.6}
+.ibox.warn{background:#fff8e1;border-left-color:#ff9800}
+.ibox.warn p{color:#e65100}
+/* FAQ toggle */
+.faq-tog{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:#f8f9ff;border-radius:10px;border:1.5px solid #e8eaf6;margin-top:18px;cursor:pointer;transition:.2s}
+.faq-tog:hover{border-color:var(--navy);background:#f0f2ff}
+.faq-tog input[type=checkbox]{width:18px;height:18px;accent-color:var(--navy);cursor:pointer;flex-shrink:0;margin-top:2px}
+.faq-tog-label{font-size:13px;font-weight:700;cursor:pointer}
+.faq-tog-sub{font-size:11px;color:var(--muted);margin-top:3px}
+/* buttons */
+.btn-primary{background:var(--navy);color:#fff;border:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s}
+.btn-primary:hover{background:var(--navy2);transform:translateY(-2px);box-shadow:0 4px 16px rgba(26,35,126,.3)}
+.btn-secondary{background:var(--bg);color:var(--text);border:1.5px solid var(--border);padding:10px 22px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:.2s}
+.btn-secondary:hover{background:var(--border)}
+.btn-gen{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;border:none;padding:15px 44px;border-radius:13px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;transition:.3s;box-shadow:0 4px 18px rgba(26,35,126,.3);display:inline-flex;align-items:center;gap:9px}
+.btn-gen:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(26,35,126,.42)}
+.btn-dl{background:var(--gold);color:var(--navy);border:none;padding:9px 22px;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;transition:.2s;display:inline-flex;align-items:center;gap:7px}
+.btn-dl:hover{background:var(--gold2);transform:translateY(-1px)}
+.gen-wrap{margin-top:22px;text-align:center}
+/* result */
+.result-area{display:none}
+.result-area.show{display:block}
+.res-card{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.06)}
+.res-head{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:20px 26px;display:flex;align-items:center;justify-content:space-between}
+.res-title{font-size:15px;font-weight:800;display:flex;align-items:center;gap:9px}
+.prompt-preview{
+  padding:24px;background:#fafafa;border-top:1px solid var(--border);
+  max-height:420px;overflow-y:auto;
+  user-select:none;-webkit-user-select:none;-moz-user-select:none;
+  position:relative;
+}
+.prompt-text{font-family:'Courier New',monospace;font-size:12px;line-height:1.75;color:#333;white-space:pre-wrap;pointer-events:none}
+.preview-notice{
+  position:sticky;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(250,250,250,.97) 35%);
+  padding:22px 0 10px;text-align:center;
+  font-size:11.5px;color:var(--muted);font-weight:600;
+}
+/* workflow */
+.wf-steps{display:flex;flex-direction:column;gap:15px;margin-top:6px}
+.wf-step{display:flex;gap:14px;align-items:flex-start}
+.wf-num{width:34px;height:34px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
+.wf-num.done{background:#4caf50}
+.wf-body{}
+.wf-title{font-size:13px;font-weight:800;color:var(--navy);margin-bottom:3px}
+.wf-title.green{color:#2e7d32}
+.wf-desc{font-size:12px;color:var(--muted);line-height:1.6}
+.wf-tag{display:inline-block;background:#fff3e0;color:#e65100;font-size:10.5px;padding:3px 8px;border-radius:5px;margin-top:4px;font-weight:700}
+.wf-tip{margin-top:18px;padding:14px 16px;background:#e8f5e9;border-radius:11px;border:1px solid #c8e6c9}
+.wf-tip-title{font-size:12px;color:#2e7d32;font-weight:800;margin-bottom:6px}
+.wf-tip-body{font-size:11.5px;color:#388e3c;line-height:1.75}
+/* coming soon */
+.coming-soon{display:flex;align-items:center;justify-content:center;min-height:60vh;flex-direction:column;gap:16px;text-align:center}
+.cs-icon{font-size:68px;opacity:.25}
+.cs-text{font-size:18px;font-weight:700;opacity:.35}
+.cs-sub{font-size:13px;color:var(--muted);opacity:.5}
+/* modal */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-ov.show{display:flex}
+.modal{background:#fff;border-radius:22px;padding:34px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 24px 70px rgba(0,0,0,.22);position:relative}
+.modal-title{font-size:20px;font-weight:800;color:var(--navy);margin-bottom:24px;display:flex;align-items:center;gap:10px}
+.modal-close{position:absolute;top:16px;right:18px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1;padding:5px;border-radius:50%;transition:.2s}
+.modal-close:hover{background:var(--bg)}
+.modal-foot{display:flex;justify-content:flex-end;gap:12px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
+/* photo upload */
+.photo-up{border:2px dashed var(--border);border-radius:13px;padding:22px;text-align:center;cursor:pointer;transition:.2s;position:relative;margin-bottom:6px}
+.photo-up:hover{border-color:var(--navy);background:#f8f9ff}
+.photo-up input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.up-icon{font-size:34px;margin-bottom:7px}
+.up-text{font-size:12.5px;color:var(--muted);line-height:1.6}
+.up-preview{width:84px;height:84px;border-radius:50%;object-fit:cover;margin:0 auto 8px;display:block;border:3px solid var(--navy)}
+/* animation */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .35s ease}
+/* scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#aaa}
+/* ── API 설정 바 ── */
+.api-bar{margin:0 12px 10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:9px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:.2s}
+.api-bar:hover{background:rgba(255,255,255,.13)}
+.api-dot{width:8px;height:8px;border-radius:50%;background:#666;flex-shrink:0;transition:.3s}
+.api-dot.on{background:#4caf50;box-shadow:0 0 6px rgba(76,175,80,.7)}
+.api-label{font-size:10.5px;flex:1;color:rgba(255,255,255,.65);line-height:1.3}
+.api-set-btn{font-size:9.5px;background:rgba(255,255,255,.12);padding:2px 8px;border-radius:4px;color:rgba(255,255,255,.7);font-weight:700;flex-shrink:0}
+/* API 모달 */
+.api-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.api-type-opt{border:2px solid var(--border);border-radius:12px;padding:16px 10px;text-align:center;cursor:pointer;transition:.2s;position:relative}
+.api-type-opt input[type=radio]{position:absolute;opacity:0;width:0;height:0}
+.api-type-opt.sel-gemini{border-color:#00897b;background:#e0f2f1}
+.api-type-opt.sel-claude{border-color:var(--navy);background:#e8eaf6}
+.api-t-icon{font-size:26px;margin-bottom:5px}
+.api-t-name{font-size:13px;font-weight:800;margin-bottom:2px}
+.api-t-sub{font-size:10px;color:var(--muted)}
+.api-key-help{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.6;background:var(--bg);border-radius:7px;padding:8px 10px}
+/* API 생성 버튼 */
+.btn-gen-api{background:linear-gradient(135deg,#00897b,#00695c);color:#fff;border:none;padding:15px 36px;border-radius:13px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;transition:.3s;box-shadow:0 4px 18px rgba(0,137,123,.35);display:inline-flex;align-items:center;gap:9px}
+.btn-gen-api:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,137,123,.5)}
+.btn-gen-api:disabled{opacity:.5;cursor:not-allowed;transform:none}
+/* 로딩 */
+.api-loading{display:none;text-align:center;padding:40px 20px;color:var(--navy);font-weight:700;font-size:14px}
+.api-loading.show{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:22px;height:22px;border:3px solid #e8eaf6;border-top-color:var(--navy);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:8px}
+/* API 결과 */
+.api-result-wrap{display:none;margin-top:20px}
+.api-result-wrap.show{display:block}
+.api-res-head{background:linear-gradient(135deg,#00897b,#00695c);color:#fff;padding:16px 24px;border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:space-between}
+.api-res-title{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px}
+.api-res-preview{background:#f8f8f8;padding:20px 24px;border-radius:0 0 14px 14px;max-height:400px;overflow-y:auto;border:1px solid var(--border);border-top:none}
+/* ── CAT-2: 카드뉴스 ── */
+.ver-btns{display:flex;gap:10px;margin-bottom:8px}
+.ver-btn{flex:1;padding:12px 10px;border:2px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:700;transition:.2s;text-align:center;line-height:1.5}
+.ver-btn.active.free{border-color:#4caf50;background:#e8f5e9;color:#2e7d32}
+.ver-btn.active.paid{border-color:var(--navy);background:#e8eaf6;color:var(--navy)}
+.ver-btn:hover:not(.active){border-color:#9fa8da;background:#f8f9ff}
+.ver-note{border-radius:9px;padding:11px 14px;font-size:12px;margin-top:6px;line-height:1.7;display:none}
+.ver-note.show{display:block}
+.free-note{background:#e8f5e9;border-left:3px solid #4caf50;color:#2e7d32}
+.paid-note{background:#e8eaf6;border-left:3px solid var(--navy);color:var(--navy2)}
+.cnt-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.cnt-btn{padding:8px 20px;border:2px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;transition:.2s}
+.cnt-btn.active{border-color:var(--navy);background:#e8eaf6;color:var(--navy)}
+.cnt-btn:hover:not(.active){border-color:#9fa8da;background:#f8f9ff}
+.custom-cnt{display:none;margin-top:8px}
+.custom-cnt.show{display:flex;align-items:center;gap:8px}
+.size-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.size-opt{border:2px solid var(--border);border-radius:11px;padding:12px 8px;text-align:center;cursor:pointer;transition:.2s;background:#fff}
+.size-opt.active{border-color:var(--navy);background:#e8eaf6}
+.size-opt:hover:not(.active){border-color:#9fa8da;background:#f8f9ff}
+.size-ratio{font-size:15px;font-weight:800;color:var(--navy);margin-bottom:2px}
+.size-px{font-size:10px;color:var(--muted);margin-bottom:1px}
+.size-use{font-size:10px;color:var(--muted)}
+.size-tag{display:inline-block;background:#fff3e0;color:#e65100;font-size:9px;padding:1px 6px;border-radius:4px;font-weight:700;margin-top:3px}
+.size-tag.native{background:#e8f5e9;color:#2e7d32}
+.tip-pill{display:inline-block;background:#f3e5f5;color:#7b1fa2;font-size:10.5px;padding:2px 9px;border-radius:10px;font-weight:700;margin-top:6px}
+.wf-tab-btns{display:flex;gap:8px;margin-bottom:14px}
+.wf-tab-btn{flex:1;padding:9px 10px;border:2px solid var(--border);border-radius:9px;background:#fff;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:700;transition:.2s;text-align:center}
+.wf-tab-btn.active.free{border-color:#4caf50;background:#e8f5e9;color:#2e7d32}
+.wf-tab-btn.active.paid{border-color:var(--navy);background:#e8eaf6;color:var(--navy)}
+.wf-panel{display:none}
+.wf-panel.show{display:block}
+.wf-step-sm{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
+.wf-num-sm{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;margin-top:1px}
+.wf-num-sm.g{background:#4caf50}
+.wf-body-sm{}
+.wf-t{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:2px}
+.wf-t.g{color:#2e7d32}
+.wf-d{font-size:11.5px;color:var(--muted);line-height:1.6}
+.cut-guide{background:#fff3e0;border:1px solid #ffcc80;border-radius:9px;padding:12px 14px;margin-top:10px;font-size:11.5px;color:#e65100;line-height:1.7}
+.cut-guide strong{color:#bf360c}
+@media(max-width:960px){.grid2{grid-template-columns:1fr}.span2{grid-column:auto}}
+@media(max-width:720px){.sidebar{width:220px}.main{margin-left:220px}.main-body{padding:20px 16px}}
+</style>
+</head>
+<body>
+
+<!-- ═══════ SIDEBAR ═══════ -->
+<aside class="sidebar">
+  <div class="sb-header">
+    <div class="logo">
+      <div class="logo-icon">🤖</div>
+      <div>
+        <div class="logo-text">AI 보험 프롬프트</div>
+        <div class="logo-sub">INSURANCE AI GENERATOR</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agent Card -->
+  <div class="agent-card" onclick="openAgentModal()" id="agentCard">
+    <div class="ac-head">
+      <span class="ac-label">설계사 정보</span>
+      <button class="ac-edit" onclick="event.stopPropagation();openAgentModal()">✏️ 수정</button>
+    </div>
+    <div id="agentDisplay">
+      <div class="not-set-box">
+        <p>정보를 먼저 입력해주세요</p>
+        <button class="btn-set" onclick="event.stopPropagation();openAgentModal()">+ 정보 입력</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Status Bar -->
+  <div class="api-bar" onclick="openApiModal()">
+    <div class="api-dot" id="apiDot"></div>
+    <div class="api-label" id="apiLabel">AI API 미설정<br><span style="font-size:9px;opacity:.7">연결하면 앱에서 직접 생성 가능</span></div>
+    <span class="api-set-btn">⚙️ 설정</span>
+  </div>
+
+  <!-- Nav -->
+  <nav class="sb-nav">
+    <div class="nav-sec">카테고리</div>
+
+    <div class="nav-item active" onclick="switchCat(1)" id="nav-1">
+      <div class="nav-num">1</div>
+      <div>
+        <div class="nav-title">고객 맞춤형 보험 설계서</div>
+        <div class="nav-desc">프롬프트 생성 · Claude AI용</div>
+        <div class="nav-badge">✅ 사용 가능</div>
+      </div>
+    </div>
+
+    <div class="nav-item" onclick="switchCat(2)" id="nav-2">
+      <div class="nav-num">2</div>
+      <div>
+        <div class="nav-title">카드뉴스 생성 프롬프트</div>
+        <div class="nav-desc">설계서 기반 · ChatGPT용</div>
+        <div class="nav-badge">✅ 사용 가능</div>
+      </div>
+    </div>
+
+    <div class="nav-item disabled" id="nav-3">
+      <div class="nav-num">3</div>
+      <div>
+        <div class="nav-title">고객 화법 생성 프롬프트</div>
+        <div class="nav-desc">상담 스크립트 자동화</div>
+        <div class="nav-badge">🔒 준비중</div>
+      </div>
+    </div>
+
+    <div class="nav-item disabled" id="nav-4">
+      <div class="nav-num">4</div>
+      <div>
+        <div class="nav-title">카테고리 4</div>
+        <div class="nav-desc">기획중</div>
+        <div class="nav-badge">🔒 준비중</div>
+      </div>
+    </div>
+
+    <div class="nav-item disabled" id="nav-5">
+      <div class="nav-num">5</div>
+      <div>
+        <div class="nav-title">카테고리 5</div>
+        <div class="nav-desc">기획중</div>
+        <div class="nav-badge">🔒 준비중</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="sb-footer">v1.0.0 · AI 보험 영업 프롬프트 생성기</div>
+</aside>
+
+<!-- ═══════ MAIN ═══════ -->
+<main class="main">
+  <div class="main-header">
+    <div class="page-title" id="pageTitle">고객 맞춤형 보험 설계서 프롬프트</div>
+    <div class="page-badge">Claude Sonnet 4.6+ 권장</div>
+  </div>
+
+  <div class="main-body">
+
+    <!-- Setup screen -->
+    <div id="setupScreen" class="setup-screen" style="display:none">
+      <div class="setup-card">
+        <div class="setup-icon">👤</div>
+        <div class="setup-title">설계사 정보를 먼저 입력해주세요</div>
+        <div class="setup-desc">
+          생성되는 모든 프롬프트에 설계사 정보가 자동 반영됩니다.<br>
+          이름·소속·연락처를 입력하면 고객 전달 문서에 표시됩니다.
+        </div>
+        <button class="btn-primary" onclick="openAgentModal()">설계사 정보 입력하기</button>
+      </div>
+    </div>
+
+    <!-- ── Category 1 ── -->
+    <div id="cat-1" class="cat-content">
+      <div class="grid2">
+
+        <!-- LEFT: Customer Input Form -->
+        <div class="card">
+          <div class="card-title">고객 정보 입력</div>
+
+          <div class="ibox">
+            <p>📌 입력된 고객 정보는 프롬프트에 자동 반영됩니다. 더 자세한 정보일수록 정확도가 높아집니다.</p>
+          </div>
+
+          <div class="row2">
+            <div class="fg">
+              <label class="fl">고객 이름 <span class="req">*</span></label>
+              <input type="text" class="fi" id="c_name" placeholder="홍길동">
+            </div>
+            <div class="fg">
+              <label class="fl">나이 <span class="req">*</span></label>
+              <input type="number" class="fi" id="c_age" placeholder="45" min="1" max="99">
+            </div>
+          </div>
+
+          <div class="fg">
+            <label class="fl">성별 <span class="req">*</span></label>
+            <div class="rgroup">
+              <div class="ropt">
+                <input type="radio" name="gender" id="g_f" value="여성">
+                <label for="g_f">👩 여성</label>
+              </div>
+              <div class="ropt">
+                <input type="radio" name="gender" id="g_m" value="남성">
+                <label for="g_m">👨 남성</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="fg">
+            <label class="fl">직업 <span class="req">*</span></label>
+            <input type="text" class="fi" id="c_job" placeholder="예: 교사, 회사원, 자영업자">
+          </div>
+
+          <div class="fg">
+            <label class="fl">건강상태 / 기존 질환</label>
+            <input type="text" class="fi" id="c_health" placeholder="예: 고혈압 관리중, 당뇨 없음, 건강함">
+          </div>
+
+          <div class="fg">
+            <label class="fl">기존 가입 보험</label>
+            <input type="text" class="fi" id="c_cur" placeholder="예: 삼성생명 종신보험, 현대해상 실손보험">
+          </div>
+
+          <div class="fg">
+            <label class="fl">보험 가입 목적 / 관심 보장</label>
+            <textarea class="fta" id="c_purpose" placeholder="예: 암 진단 시 치료비 걱정 없이 대비하고 싶음. 노후 준비도 함께 하고 싶음"></textarea>
+          </div>
+
+          <div class="row2">
+            <div class="fg">
+              <label class="fl">월 보험료 예산</label>
+              <input type="text" class="fi" id="c_budget" placeholder="예: 10만원 이내">
+            </div>
+            <div class="fg">
+              <label class="fl">가족력</label>
+              <input type="text" class="fi" id="c_family" placeholder="예: 부친 대장암">
+            </div>
+          </div>
+
+          <div class="fg">
+            <label class="fl">기타 특이사항</label>
+            <textarea class="fta" id="c_notes" style="min-height:60px" placeholder="예: 흡연력 없음, 운동 규칙적, 해외 출장 잦음"></textarea>
+          </div>
+
+          <!-- FAQ Toggle -->
+          <div class="faq-tog" onclick="toggleFAQ(event)">
+            <input type="checkbox" id="includeFAQ" checked onclick="event.stopPropagation()">
+            <div>
+              <div class="faq-tog-label">❓ FAQ 섹션 포함하기</div>
+              <div class="faq-tog-sub">고객이 자주 묻는 질문과 답변을 결과물에 포함합니다 (JSON-LD 스키마 포함)</div>
+            </div>
+          </div>
+
+          <!-- API 직접 생성용: 설계안 내용 입력 (API 설정 시 표시) -->
+          <div id="apiPlanField" style="display:none">
+            <div style="height:1px;background:var(--border);margin:18px 0"></div>
+            <div class="ibox" style="background:#e0f2f1;border-left-color:#00897b">
+              <p>🤖 <strong>AI 직접 생성 모드</strong> — 아래에 보험 설계안 내용을 붙여넣으면 앱에서 바로 제안서 HTML을 생성합니다.</p>
+            </div>
+            <div class="fg">
+              <label class="fl">보험 설계안 내용 붙여넣기 <span class="req">*</span></label>
+              <textarea class="fta" id="c_plan_text" style="min-height:140px" placeholder="보험 설계안의 주요 내용을 복사하여 붙여넣으세요.&#10;(상품명, 보험료, 보장 항목, 특약 내용 등)"></textarea>
+            </div>
+          </div>
+
+          <div class="gen-wrap">
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+              <button class="btn-gen" onclick="doGenerate()">✨ 프롬프트 생성</button>
+              <button class="btn-gen-api" id="btnApiGen" style="display:none" onclick="doGenerateApi()">🤖 AI 직접 생성</button>
+            </div>
+            <div id="apiModeNote" style="display:none;margin-top:10px;font-size:11px;color:var(--muted);text-align:center">
+              ✨ 프롬프트 생성: 기존 방식 (Claude/ChatGPT에 직접 업로드) &nbsp;|&nbsp; 🤖 AI 직접 생성: API로 앱에서 바로 생성
+            </div>
+          </div>
+          <div class="api-loading" id="apiLoading">
+            <div><span class="spinner"></span>AI가 보험 제안서를 생성하고 있습니다...</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:8px">Gemini는 10~20초, Claude는 20~40초 소요될 수 있습니다</div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Workflow -->
+        <div class="card">
+          <div class="card-title">사용 방법 — 워크플로우</div>
+
+          <div class="ibox warn">
+            <p>⚠️ Claude AI <strong>Sonnet 4.6 이상</strong> 버전 사용을 강력 권장합니다. 더 정확하고 풍부한 결과물을 얻을 수 있습니다.</p>
+          </div>
+
+          <div class="wf-steps">
+            <div class="wf-step">
+              <div class="wf-num">1</div>
+              <div class="wf-body">
+                <div class="wf-title">설계사 정보 &amp; 고객 정보 입력</div>
+                <div class="wf-desc">좌측 폼에 고객 정보를 입력합니다. 상세할수록 맞춤도가 높아집니다.</div>
+              </div>
+            </div>
+            <div class="wf-step">
+              <div class="wf-num">2</div>
+              <div class="wf-body">
+                <div class="wf-title">프롬프트 생성 → HTML 다운로드</div>
+                <div class="wf-desc">'프롬프트 생성하기' 클릭 → 생성된 프롬프트를 HTML 파일로 다운로드합니다.</div>
+                <div class="wf-tag">⚠️ 보안상 복사 불가 · HTML 파일로만 활용 가능</div>
+              </div>
+            </div>
+            <div class="wf-step">
+              <div class="wf-num">3</div>
+              <div class="wf-body">
+                <div class="wf-title">Claude AI 접속</div>
+                <div class="wf-desc">claude.ai 접속 → 새 대화(+) 시작 → 모델: <strong>Claude Sonnet 4.6 이상</strong> 선택</div>
+              </div>
+            </div>
+            <div class="wf-step">
+              <div class="wf-num">4</div>
+              <div class="wf-body">
+                <div class="wf-title">📎 파일 첨부 (클립 아이콘)</div>
+                <div class="wf-desc">
+                  <div style="margin:3px 0">📄 다운로드한 <strong>프롬프트 HTML 파일</strong></div>
+                  <div style="margin:3px 0">📋 고객 <strong>보험 설계안</strong> (PDF 또는 이미지, 1개 이상)</div>
+                  <div style="margin:3px 0">📑 <strong>보험 약관</strong> 파일 (있는 경우)</div>
+                  <div style="margin:3px 0">📊 <strong>기존 가입 내역</strong> 파일 (있는 경우)</div>
+                </div>
+              </div>
+            </div>
+            <div class="wf-step">
+              <div class="wf-num done">5</div>
+              <div class="wf-body">
+                <div class="wf-title green">전송 → 결과물 수신 🎉</div>
+                <div class="wf-desc">전송 클릭 → AI가 고객 맞춤 보험 제안서 HTML 자동 생성<br>결과물을 다운로드하여 고객에게 전달합니다.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="wf-tip">
+            <div class="wf-tip-title">💡 더 좋은 결과를 위한 팁</div>
+            <div class="wf-tip-body">
+              · 보험 설계안 PDF + 약관을 함께 첨부하면 정확도↑<br>
+              · 기존 가입 내역이 있으면 보장 공백 분석이 정밀해집니다<br>
+              · 가족력·직업 상세 정보 입력 시 맞춤도가 높아집니다<br>
+              · A/B 두 가지 설계안을 동시에 첨부하면 비교 분석 가능
+            </div>
+          </div>
+        </div>
+
+        <!-- Result (span full width) -->
+        <div class="span2 result-area" id="resultArea">
+          <div class="res-card fade-up">
+            <div class="res-head">
+              <div class="res-title">📄 생성된 프롬프트 미리보기</div>
+              <button class="btn-dl" onclick="downloadHTML()">📥 HTML 파일 다운로드</button>
+            </div>
+            <div class="prompt-preview" oncontextmenu="return false">
+              <pre class="prompt-text" id="promptOut"></pre>
+              <div class="preview-notice">📥 HTML 파일로 다운로드하여 Claude AI에 업로드하세요</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- API 직접 생성 결과 -->
+        <div class="span2 api-result-wrap" id="apiResultWrap">
+          <div class="api-res-head">
+            <div class="api-res-title">✅ AI 생성 완료 — 보험 제안서</div>
+            <button class="btn-dl" id="btnApiDownload">📥 HTML 다운로드</button>
+          </div>
+          <div class="api-res-preview">
+            <pre id="apiResultPreview" style="white-space:pre-wrap;font-family:'Courier New',monospace;font-size:11px;line-height:1.7;color:#333"></pre>
+          </div>
+        </div>
+
+      </div><!-- /grid2 -->
+    </div><!-- /cat-1 -->
+
+    <!-- ── Category 2 ── -->
+    <div id="cat-2" class="cat-content">
+      <div class="grid2">
+
+        <!-- LEFT: 설정 폼 -->
+        <div class="card">
+          <div class="card-title">카드뉴스 생성 설정</div>
+
+          <div class="ibox">
+            <p>📌 1번에서 만든 <strong>보험 제안서 HTML 파일</strong>과 <strong>디자인 참고 이미지</strong>를 ChatGPT에 함께 업로드합니다. 이 프롬프트는 ChatGPT 이미지 생성 전용입니다.</p>
+          </div>
+
+          <!-- GPT 버전 -->
+          <div class="fg">
+            <label class="fl">ChatGPT 버전 선택 <span class="req">*</span></label>
+            <div class="ver-btns">
+              <button class="ver-btn" id="vbtn-free" data-action="ver" data-val="free">
+                🆓 무료버전<br><span style="font-size:10px;font-weight:400;opacity:.75">한 이미지에 전체 카드 생성</span>
+              </button>
+              <button class="ver-btn" id="vbtn-paid" data-action="ver" data-val="paid">
+                ⭐ 유료버전 (Plus/Pro)<br><span style="font-size:10px;font-weight:400;opacity:.75">카드별 개별 이미지 생성</span>
+              </button>
+            </div>
+            <div class="ver-note free-note" id="vnote-free">
+              🆓 <strong>무료버전 특징:</strong> '추론' 모델 선택 불가. 모든 카드가 <strong>하나의 이미지에 나란히</strong> 생성됩니다.<br>→ 스크린샷 후 이미지 편집으로 각 카드를 잘라 PNG/JPG로 저장해서 사용합니다.<br>→ <strong>4~6장 생성을 권장</strong>합니다.
+            </div>
+            <div class="ver-note paid-note" id="vnote-paid">
+              ⭐ <strong>유료버전 특징:</strong> 모델 선택 시 <strong>'추론(o1/o3)'</strong> 선택 → 각 카드가 <strong>개별 이미지로 생성</strong>됩니다.<br>→ 각 이미지 우측 다운로드 버튼으로 개별 저장 가능합니다.<br>→ 장수 제한 없이 원하는 만큼 생성 가능합니다.
+            </div>
+          </div>
+
+          <!-- 카드 장수 -->
+          <div class="fg">
+            <label class="fl">카드 장수 <span class="req">*</span></label>
+            <div class="cnt-btns">
+              <button class="cnt-btn active" id="cbtn-4" data-action="cnt" data-val="4">4장</button>
+              <button class="cnt-btn" id="cbtn-6" data-action="cnt" data-val="6">6장</button>
+              <button class="cnt-btn" id="cbtn-c" data-action="cnt" data-val="custom">✏️ 직접 입력</button>
+            </div>
+            <div class="custom-cnt" id="customCntWrap">
+              <input type="number" class="fi" id="c2_cnt_custom" placeholder="장수 입력 (1~20)" min="1" max="20" style="max-width:200px">
+              <span style="font-size:12px;color:var(--muted)">장</span>
+            </div>
+            <div style="margin-top:7px;font-size:11.5px;color:var(--muted)">💡 무료버전은 4~6장을 권장합니다</div>
+          </div>
+
+          <!-- 이미지 사이즈 -->
+          <div class="fg">
+            <label class="fl">이미지 사이즈 <span class="req">*</span></label>
+            <div class="size-grid">
+              <div class="size-opt active" id="sopt-11" data-action="size" data-ratio="1:1" data-px="1024x1024" data-label="정방형">
+                <div class="size-ratio">1 : 1</div>
+                <div class="size-px">1024 × 1024</div>
+                <div class="size-use">인스타그램 · 블로그</div>
+                <div class="size-tag native">기본 추천</div>
+              </div>
+              <div class="size-opt" id="sopt-45" data-action="size" data-ratio="4:5" data-px="1024x1280" data-label="세로형">
+                <div class="size-ratio">4 : 5</div>
+                <div class="size-px">1024 × 1280</div>
+                <div class="size-use">인스타그램 세로</div>
+              </div>
+              <div class="size-opt" id="sopt-43" data-action="size" data-ratio="4:3" data-px="1024x768" data-label="가로형">
+                <div class="size-ratio">4 : 3</div>
+                <div class="size-px">1024 × 768</div>
+                <div class="size-use">블로그 · 발표자료</div>
+              </div>
+              <div class="size-opt" id="sopt-916" data-action="size" data-ratio="9:16" data-px="1024x1792" data-label="세로 풀스크린">
+                <div class="size-ratio">9 : 16</div>
+                <div class="size-px">1024 × 1792</div>
+                <div class="size-use">스토리 · 릴스</div>
+                <div class="size-tag native">네이티브 지원</div>
+              </div>
+              <div class="size-opt" id="sopt-169" data-action="size" data-ratio="16:9" data-px="1792x1024" data-label="가로 풀스크린">
+                <div class="size-ratio">16 : 9</div>
+                <div class="size-px">1792 × 1024</div>
+                <div class="size-use">유튜브 썸네일</div>
+                <div class="size-tag native">네이티브 지원</div>
+              </div>
+              <div class="size-opt" id="sopt-32" data-action="size" data-ratio="3:2" data-px="1536x1024" data-label="가로 와이드">
+                <div class="size-ratio">3 : 2</div>
+                <div class="size-px">1536 × 1024</div>
+                <div class="size-use">블로그 와이드</div>
+              </div>
+            </div>
+            <div style="margin-top:8px;font-size:11px;color:var(--muted)">🟢 네이티브 지원: ChatGPT가 정확한 비율로 생성 · 나머지는 근사치 생성</div>
+          </div>
+
+          <div class="gen-wrap">
+            <button class="btn-gen" id="btnGen2">🗞️ 카드뉴스 프롬프트 생성하기</button>
+          </div>
+        </div>
+
+        <!-- RIGHT: 워크플로우 -->
+        <div class="card">
+          <div class="card-title">사용 방법 — 워크플로우</div>
+
+          <div class="ibox warn" style="margin-bottom:16px">
+            <p>⚠️ ChatGPT <strong>chat.openai.com</strong> 에서 진행합니다. Claude AI가 아닌 <strong>ChatGPT 이미지 생성</strong> 기능을 사용합니다.</p>
+          </div>
+
+          <!-- 버전 탭 -->
+          <div class="wf-tab-btns">
+            <button class="wf-tab-btn" id="wtab-free" data-action="wftab" data-val="free">🆓 무료버전 워크플로우</button>
+            <button class="wf-tab-btn" id="wtab-paid" data-action="wftab" data-val="paid">⭐ 유료버전 워크플로우</button>
+          </div>
+
+          <!-- 무료 워크플로우 -->
+          <div class="wf-panel" id="wpanel-free">
+            <div class="wf-step-sm">
+              <div class="wf-num-sm">1</div>
+              <div class="wf-body-sm">
+                <div class="wf-t">디자인 참고 이미지 준비</div>
+                <div class="wf-d">핀터레스트(pinterest.co.kr) → <strong>'카드뉴스'</strong> 검색<br>마음에 드는 디자인 이미지 캡처/저장 (1~3장 추천)</div>
+              </div>
+            </div>
+            <div class="wf-step-sm">
+              <div class="wf-num-sm">2</div>
+              <div class="wf-body-sm">
+                <div class="wf-t">이 앱에서 프롬프트 복사</div>
+                <div class="wf-d">설정 완료 → '카드뉴스 프롬프트 생성하기' → <strong>📋 프롬프트 복사하기</strong> 클릭</div>
+              </div>
+            </div>
+            <div class="wf-step-sm">
+              <div class="wf-num-sm">3</div>
+              <div class="wf-body-sm">
+                <div class="wf-t">ChatGPT 접속 (무료 계정)</div>
+                <div class="wf-d">chat.openai.com → 로그인 → <strong>새 대화(+)</strong> 시작</div>
+              </div>
+            </div>
+            <div class="wf-step-sm">
+              <div class="wf-num-sm">4</div>
+              <div class="wf-body-sm">
+                <div class="wf-t">📎 파일 2가지 첨부 + 프롬프트 붙여넣기</div>
+                <div class="wf-d">
+                  <div>① 📋 입력창에 복사한 <strong>프롬프트 붙여넣기 (Ctrl+V)</strong></div>
+                  <div>② 📄 <strong>1번에서 만든 보험 제안서 HTML</strong> 첨부</div>
+                  <div>③ 🖼️ <strong>Pinterest 디자인 참고 이미지</strong> 첨부</div>
+                </div>
+              </div>
+            </div>
+            <div class="wf-step-sm">
+              <div class="wf-num-sm g">5</div>
+              <div class="wf-body-sm">
+                <div class="wf-t g">전송 → 결과 수신</div>
+                <div class="wf-d">전송 → <strong>1장의 이미지에 4~6장 카드가 나란히 생성</strong></div>
+              </div>
+            </div>
+            <div class="cut-guide">
+              <strong>✂️ 무료버전 이미지 자르기 방법</strong><br>
+              생성된 이미지 스크린샷 저장<br>
+              → 윈도우: <strong>캡처 도구</strong> 또는 <strong>그림판</strong>으로 카드별 잘라내기<br>
+              → 맥: <strong>미리보기</strong> 앱에서 자르기<br>
+              → 각 카드를 <strong>PNG 또는 JPG</strong>로 저장 후 업로드
+            </div>
+          </div>
+
+          <!-- 유료 워크플로우 -->
+          <div class="wf-panel" id="wpanel-paid">
+            <div class="wf-step-sm">
+              <div class="wf-num-sm">1</div>
+              <div class="wf-body-sm">
+                <div class="wf-t">디자인 참고 이미지 준비</div>
+                <div class="wf-d">핀터레스트(pinterest.co.kr) → <strong>'카드뉴스'</strong> 검색<br>원하는 디자인 이미지 캡처/저장 (1~3장 추천)</div>
+              </div>
+            </div>
+            <div class="wf-step-sm">
+              <div class="wf-num-sm">2</div>
+              <div class="wf-body-sm">
+                <div class="wf-t">이 앱에서 프롬프트 복사</div>
+                <div class="wf-d">설정 완료 → '카드뉴스 프롬프트 생성하기' → <strong>📋 프롬프트 복사하기</strong> 클릭</div>
+              </div>
+            </div>
+            <div class="wf-step-sm">
+              <div class="wf-num-sm">3</div>
+              <div class="wf-body-sm">
+                <div class="wf-t">ChatGPT Plus/Pro 접속</div>
+                <div class="wf-d">chat.openai.com → Plus/Pro 로그인 → 새 대화<br>모델: <strong>o1 · o3 추론 모델 선택</strong></div>
+              </div>
+            </div>
+            <div class="wf-step-sm">
+              <div class="wf-num-sm">4</div>
+              <div class="wf-body-sm">
+                <div class="wf-t">📎 파일 2가지 첨부 + 프롬프트 붙여넣기</div>
+                <div class="wf-d">
+                  <div>① 📋 입력창에 복사한 <strong>프롬프트 붙여넣기 (Ctrl+V)</strong></div>
+                  <div>② 📄 <strong>1번에서 만든 보험 제안서 HTML</strong> 첨부</div>
+                  <div>③ 🖼️ <strong>Pinterest 디자인 참고 이미지</strong> 첨부</div>
+                </div>
+              </div>
+            </div>
+            <div class="wf-step-sm">
+              <div class="wf-num-sm g">5</div>
+              <div class="wf-body-sm">
+                <div class="wf-t g">전송 → 카드별 개별 이미지 수신 🎉</div>
+                <div class="wf-d">전송 → <strong>각 카드가 개별 이미지로 순차 생성</strong><br>각 이미지 우측 ⬇ 버튼으로 개별 다운로드</div>
+              </div>
+            </div>
+            <div class="wf-tip" style="margin-top:4px">
+              <div class="wf-tip-title">💡 유료버전 팁</div>
+              <div class="wf-tip-body">
+                · 추론 모델 사용 시 생성 시간이 다소 걸릴 수 있습니다<br>
+                · 마음에 들지 않는 카드만 "3번 카드 다시 만들어줘"로 재생성 가능<br>
+                · 색상·폰트 수정도 채팅으로 요청 가능합니다
+              </div>
+            </div>
+          </div>
+
+          <!-- 초기 안내 (탭 미선택 시) -->
+          <div class="wf-panel show" id="wpanel-init">
+            <div style="text-align:center;padding:30px 0;color:var(--muted)">
+              <div style="font-size:40px;margin-bottom:12px">☝️</div>
+              <div style="font-size:13px;font-weight:600">위에서 <strong>버전을 선택</strong>하면<br>해당 워크플로우가 표시됩니다</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Result -->
+        <div class="span2 result-area" id="resultArea2">
+          <div class="res-card fade-up">
+            <div class="res-head">
+              <div class="res-title">🗞️ 생성된 카드뉴스 프롬프트</div>
+              <button class="btn-dl" id="copyBtn2">📋 프롬프트 복사하기</button>
+            </div>
+            <div class="prompt-preview" style="user-select:text;-webkit-user-select:text">
+              <pre class="prompt-text" id="promptOut2" style="pointer-events:auto"></pre>
+              <div class="preview-notice">📋 위 복사 버튼 클릭 → ChatGPT에 붙여넣기 → 보험제안서 + 디자인 이미지 첨부 후 전송</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /grid2 -->
+    </div><!-- /cat-2 -->
+    <div id="cat-3" class="cat-content">
+      <div class="coming-soon">
+        <div class="cs-icon">💬</div>
+        <div class="cs-text">고객 화법 생성 프롬프트</div>
+        <div class="cs-sub">상담 스크립트 자동화 — 곧 업데이트 예정</div>
+      </div>
+    </div>
+    <div id="cat-4" class="cat-content">
+      <div class="coming-soon">
+        <div class="cs-icon">🔮</div>
+        <div class="cs-text">카테고리 4 — 기획중</div>
+        <div class="cs-sub">추후 업데이트 예정</div>
+      </div>
+    </div>
+    <div id="cat-5" class="cat-content">
+      <div class="coming-soon">
+        <div class="cs-icon">🔮</div>
+        <div class="cs-text">카테고리 5 — 기획중</div>
+        <div class="cs-sub">추후 업데이트 예정</div>
+      </div>
+    </div>
+
+  </div><!-- /main-body -->
+</main>
+
+<!-- ═══════ AGENT MODAL ═══════ -->
+<div class="modal-ov" id="agentModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAgentModal()">✕</button>
+    <div class="modal-title">👤 설계사 정보 입력</div>
+
+    <div class="photo-up" onclick="document.getElementById('photoFile').click()">
+      <input type="file" id="photoFile" accept="image/*" onchange="onPhotoChange(event)" style="display:none">
+      <div id="photoArea">
+        <div class="up-icon">📷</div>
+        <div class="up-text">프로필 사진 또는 명함 이미지 업로드<br><span style="font-size:11px;opacity:.6">클릭하여 선택 (선택사항)</span></div>
+      </div>
+    </div>
+
+    <div style="height:16px"></div>
+
+    <div class="row2">
+      <div class="fg">
+        <label class="fl">이름 <span class="req">*</span></label>
+        <input type="text" class="fi" id="a_name" placeholder="홍길동">
+      </div>
+      <div class="fg">
+        <label class="fl">소속 보험사 / 대리점</label>
+        <input type="text" class="fi" id="a_co" placeholder="삼성생명 강남지점">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="fg">
+        <label class="fl">설계사 번호</label>
+        <input type="text" class="fi" id="a_lic" placeholder="제 2024-000123호">
+      </div>
+      <div class="fg">
+        <label class="fl">연락처</label>
+        <input type="text" class="fi" id="a_phone" placeholder="010-0000-0000">
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">이메일</label>
+      <input type="email" class="fi" id="a_email" placeholder="agent@example.com">
+    </div>
+    <div class="fg">
+      <label class="fl">한줄 소개 / 전문 분야</label>
+      <input type="text" class="fi" id="a_intro" placeholder="예: 10년 경력 암보험 전문 설계사">
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="closeAgentModal()">취소</button>
+      <button class="btn-primary" onclick="saveAgent()">저장하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ API 설정 MODAL ═══════ -->
+<div class="modal-ov" id="apiModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeApiModal()">✕</button>
+    <div class="modal-title">⚙️ AI API 설정</div>
+
+    <div class="ibox">
+      <p>📌 API 키는 <strong>이 기기에만 저장</strong>됩니다. 서버로 전송되지 않습니다.<br>각 사용자가 본인의 API 키를 직접 입력해야 합니다.</p>
+    </div>
+
+    <div class="fg">
+      <label class="fl">API 종류 선택</label>
+      <div class="api-type-grid">
+        <div class="api-type-opt" id="apiOptGemini" onclick="selectApiType('gemini')">
+          <input type="radio" name="apiType" value="gemini" id="radio_gemini">
+          <div class="api-t-icon">🆓</div>
+          <div class="api-t-name">일반버전</div>
+          <div class="api-t-sub">Google Gemini 무료</div>
+        </div>
+        <div class="api-type-opt" id="apiOptClaude" onclick="selectApiType('claude')">
+          <input type="radio" name="apiType" value="claude" id="radio_claude">
+          <div class="api-t-icon">⭐</div>
+          <div class="api-t-name">고급버전</div>
+          <div class="api-t-sub">Claude API (유료)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gemini 키 입력 -->
+    <div id="geminiKeySection" class="fg">
+      <label class="fl">Gemini API 키</label>
+      <input type="password" class="fi" id="inp_gemini_key" placeholder="AIzaSy...">
+      <div class="api-key-help">
+        🔑 발급 방법: <strong>Google AI Studio</strong> (aistudio.google.com) 접속<br>
+        → 우측 상단 "Get API key" → "Create API key" → 복사<br>
+        💡 <strong>무료</strong>로 사용 가능 (일일 요청 한도 있음)
+      </div>
+    </div>
+
+    <!-- Claude 키 입력 -->
+    <div id="claudeKeySection" class="fg" style="display:none">
+      <label class="fl">Claude API 키</label>
+      <input type="password" class="fi" id="inp_claude_key" placeholder="sk-ant-api03-...">
+      <div class="api-key-help">
+        🔑 발급 방법: <strong>Anthropic Console</strong> (console.anthropic.com) 접속<br>
+        → API Keys → Create Key → 복사<br>
+        💡 <strong>사용량 기반 과금</strong> (보험제안서 1건 ≈ $0.01~0.05 예상)
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="clearApiSettings()">API 연결 해제</button>
+      <button class="btn-secondary" onclick="closeApiModal()">취소</button>
+      <button class="btn-primary" onclick="saveApiSettings()">저장하기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──
+let agent = null;
+let photoB64 = '';
+let promptText = '';
+let curCat = 1;
+
+// ── Init ──
+(function init(){
+  const s = localStorage.getItem('ins_agent');
+  if(s){ agent = JSON.parse(s); photoB64 = agent.photo||''; }
+  renderAgent();
+  checkSetup();
+})();
+
+function checkSetup(){
+  const has = agent && agent.name;
+  if(has){
+    document.getElementById('setupScreen').style.display = 'none';
+    document.querySelectorAll('.cat-content').forEach(el => el.classList.remove('active'));
+    document.getElementById('cat-'+curCat).classList.add('active');
+  } else {
+    document.getElementById('setupScreen').style.display = 'flex';
+  }
+}
+
+// ── Sidebar nav ──
+function switchCat(n){
+  if(n > 2){ return; }
+  curCat = n;
+  document.querySelectorAll('.nav-item').forEach((el,i)=>el.classList.toggle('active', i===n-1));
+  document.querySelectorAll('.cat-content').forEach(el=>el.classList.remove('active'));
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('cat-'+n).classList.add('active');
+}
+
+// ── Agent ──
+function renderAgent(){
+  if(!agent || !agent.name){
+    document.getElementById('agentDisplay').innerHTML=`
+      <div class="not-set-box">
+        <p>정보를 먼저 입력해주세요</p>
+        <button class="btn-set" onclick="event.stopPropagation();openAgentModal()">+ 정보 입력</button>
+      </div>`;
+    return;
+  }
+  const ph = photoB64
+    ? `<img src="${photoB64}" alt="프로필">`
+    : agent.name.charAt(0);
+  document.getElementById('agentDisplay').innerHTML=`
+    <div class="agent-info-row">
+      <div class="avatar">${ph}</div>
+      <div>
+        <div class="a-name">${esc(agent.name)} 설계사</div>
+        <div class="a-company">${esc(agent.company||'소속 미입력')}</div>
+      </div>
+    </div>`;
+}
+
+function openAgentModal(){
+  if(agent){
+    document.getElementById('a_name').value = agent.name||'';
+    document.getElementById('a_co').value   = agent.company||'';
+    document.getElementById('a_lic').value  = agent.license||'';
+    document.getElementById('a_phone').value= agent.phone||'';
+    document.getElementById('a_email').value= agent.email||'';
+    document.getElementById('a_intro').value= agent.intro||'';
+    if(photoB64){
+      document.getElementById('photoArea').innerHTML=
+        `<img src="${photoB64}" class="up-preview" alt="프로필"><div class="up-text" style="font-size:11px">클릭하여 변경</div>`;
+    }
+  }
+  document.getElementById('agentModal').classList.add('show');
+}
+
+function closeAgentModal(){
+  document.getElementById('agentModal').classList.remove('show');
+}
+
+function onPhotoChange(e){
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    photoB64 = ev.target.result;
+    document.getElementById('photoArea').innerHTML=
+      `<img src="${photoB64}" class="up-preview" alt="프로필"><div class="up-text" style="font-size:11px">클릭하여 변경</div>`;
+  };
+  r.readAsDataURL(f);
+}
+
+function saveAgent(){
+  const name = document.getElementById('a_name').value.trim();
+  if(!name){ alert('이름은 필수 입력 항목입니다.'); return; }
+  agent = {
+    name,
+    company : document.getElementById('a_co').value.trim(),
+    license : document.getElementById('a_lic').value.trim(),
+    phone   : document.getElementById('a_phone').value.trim(),
+    email   : document.getElementById('a_email').value.trim(),
+    intro   : document.getElementById('a_intro').value.trim(),
+    photo   : photoB64
+  };
+  localStorage.setItem('ins_agent', JSON.stringify(agent));
+  renderAgent();
+  closeAgentModal();
+  checkSetup();
+}
+
+document.getElementById('agentModal').addEventListener('click', e => {
+  if(e.target === document.getElementById('agentModal')) closeAgentModal();
+});
+
+// ── FAQ toggle ──
+function toggleFAQ(e){
+  if(e.target.tagName === 'INPUT') return;
+  const cb = document.getElementById('includeFAQ');
+  cb.checked = !cb.checked;
+}
+
+// ── Generate ──
+function doGenerate(){
+  if(!agent || !agent.name){ alert('설계사 정보를 먼저 입력해주세요.'); openAgentModal(); return; }
+  const name = document.getElementById('c_name').value.trim();
+  const age  = document.getElementById('c_age').value.trim();
+  const gender = document.querySelector('input[name="gender"]:checked')?.value||'';
+  const job  = document.getElementById('c_job').value.trim();
+  if(!name||!age||!gender||!job){
+    alert('고객 이름, 나이, 성별, 직업은 필수 입력 항목입니다.');
+    return;
+  }
+  const ci = {
+    name, age, gender, job,
+    health  : document.getElementById('c_health').value.trim()||'미입력',
+    cur     : document.getElementById('c_cur').value.trim()||'미입력',
+    purpose : document.getElementById('c_purpose').value.trim()||'미입력',
+    budget  : document.getElementById('c_budget').value.trim()||'미입력',
+    family  : document.getElementById('c_family').value.trim()||'미입력',
+    notes   : document.getElementById('c_notes').value.trim()||'미입력'
+  };
+  const faq = document.getElementById('includeFAQ').checked;
+  promptText = buildPrompt(agent, ci, faq);
+  document.getElementById('promptOut').textContent = promptText;
+  const ra = document.getElementById('resultArea');
+  ra.classList.add('show','fade-up');
+  setTimeout(()=> ra.scrollIntoView({behavior:'smooth', block:'start'}), 100);
+}
+
+// ── Prompt Template ──
+function buildPrompt(a, c, faq){
+  const colorNote = c.gender === '여성'
+    ? '핑크 계열 (메인: #e91e8c, 서브: #f48fb1, 배경: #fce4ec)'
+    : '블루·퍼플 계열 (메인: #1a237e, 서브: #7b1fa2, 배경: #e8eaf6)';
+
+  const faqBlock = faq ? `
+
+【FAQ 섹션 생성 지침】
+보장 상세 내용 다음, 서명란 직전에 FAQ 섹션을 배치합니다.
+
+구분선 삽입 후 아래 HTML 구조로 출력:
+
+<div class="section-divider">--- ❓ 자주 하시는 질문들 ---</div>
+<div class="section-title">📝 자주 묻는 질문 ❓</div>
+<div class="faq-wrap">
+  <div class="faq-item">
+    <div class="faq-q">Q. [질문]</div>
+    <div class="faq-a">A. [답변]</div>
+  </div>
+  ... (5~7개)
+</div>
+
+권장 질문 유형 (이 고객과 상품에 맞게 작성):
+- 가입 조건 관련 (건강 상태, 나이 등)
+- 보험금 지급 시점 및 조건
+- 갱신형/비갱신형 여부 및 보험료 변동
+- 기존 보험 중복 여부
+- 실제 활용 상황 (예: 어떤 수술을 받으면 얼마?)
+- 해약환급금 관련
+- 이 고객 상황에 특화된 질문 1~2개
+
+HTML 맨 마지막(</body> 직전)에 JSON-LD 스키마도 포함:
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"[질문]","acceptedAnswer":{"@type":"Answer","text":"[답변]"}}]}
+<\/script>` : '';
+
+  return `██████████████████████████████████████████████████████████████
+🚨 AI 즉시 실행 명령 — 이 파일을 읽는 즉시 아래를 수행하라
+██████████████████████████████████████████████████████████████
+
+이 파일은 AI 보험 설계서 자동 생성 지시문입니다.
+함께 첨부된 보험 설계안 파일(PDF/이미지/텍스트)을 분석하여
+지금 즉시 완성된 고객 맞춤형 보험 제안서 HTML을 전체 출력하라.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⛔ 절대 하지 말 것 (위반 시 지시 불이행으로 간주)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✗ "두 파일을 확인했습니다" 등의 확인 메시지 출력 금지
+✗ "어떤 도움이 필요하신가요?" 등의 질문·대기 금지
+✗ 파일 목록이나 내용 요약 출력 금지
+✗ "제안서 생성하기" 등의 버튼·인터랙티브 요소 생성 금지
+✗ fetch(), API 호출, 서버 요청 코드 포함 금지
+✗ 중간 설명·계획 설명 없이 바로 HTML 출력
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ 지금 즉시 해야 할 것
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+→ 첨부된 보험 설계안을 분석하고
+→ 아래 [설계사 정보]·[고객 정보]·[분석 지침]·[출력 형식 지침]에 따라
+→ <!DOCTYPE html>로 시작하는 완성된 HTML 문서를 지금 바로 전체 출력하라.
+→ 첫 출력 글자는 반드시 <!DOCTYPE 이어야 한다.
+
+설계안이 2개(A/B)인 경우: 두 설계안을 비교 분석하여 하나의 통합 제안서로 출력
+설계안이 1개인 경우: 해당 설계안을 분석하여 네이버 블로그 스타일 제안서로 출력
+
+██████████████████████████████████████████████████████████████
+
+아래는 고객 정보와 설계사 정보, 상세 작성 지침입니다.
+
+═══════════════════════════════════════════════════════════════
+📋 설계사 정보
+═══════════════════════════════════════════════════════════════
+이름       : ${a.name} 설계사
+소속       : ${a.company||'미입력'}
+설계사 번호: ${a.license||'미입력'}
+연락처     : ${a.phone||'미입력'}
+이메일     : ${a.email||'미입력'}
+소개       : ${a.intro||'미입력'}
+
+═══════════════════════════════════════════════════════════════
+👤 고객 정보
+═══════════════════════════════════════════════════════════════
+이름             : ${c.name}
+나이             : ${c.age}세
+성별             : ${c.gender}
+직업             : ${c.job}
+건강상태/기존질환: ${c.health}
+기존 가입 보험   : ${c.cur}
+보험 가입 목적   : ${c.purpose}
+월 보험료 예산   : ${c.budget}
+가족력           : ${c.family}
+기타 특이사항    : ${c.notes}
+
+═══════════════════════════════════════════════════════════════
+📂 첨부 파일 분석 대상 (업로드된 파일에서 추출)
+═══════════════════════════════════════════════════════════════
+
+【설계안 A/B에서 추출】
+- 상품명, 보험사, 보험료(월납)
+- 주계약 보장 항목 + 금액
+- 특약 목록 전체 + 각 보장금액
+- 보험기간 / 납입기간
+- 갱신형 여부
+
+【약관에서 추출】
+- 지급 조건 (정확한 진단명, ICD 코드 포함)
+- 면책 조항 전문
+- 감액 기간
+- 중복 보상 여부
+- 주요 특약별 지급 사유
+
+【기존 가입 내역에서 추출】
+- 현재 보험사 + 상품명
+- 보장 항목별 현재 금액
+- 만기/갱신 예정일
+
+═══════════════════════════════════════════════════════════════
+📊 분석 지침
+═══════════════════════════════════════════════════════════════
+
+【1. 문서 상단 구성】
+- 추천 보험에 대한 간략한 소개와 핵심 비교 포인트
+- 고객 정보 요약 표시 (이름, 나이, 성별, 직업)
+- 고객 정보 분석: 이 보험의 중요 특약이 왜 필요한지 간략 설명
+- 최신 통계/뉴스 기사 적용 (아래 2번 지침 참조)
+
+【2. 최신 통계 및 뉴스 기사 적용】
+웹 검색으로 아래 데이터를 최신 기준으로 확인 후 적용합니다.
+
+검색 쿼리 예시:
+- "국립암센터 ${c.job.split(/\s/)[0]||'직업군'} 암 발생률 통계 2024"
+- "건강보험심사평가원 암 평균 진료비 2024"
+- "통계청 한국인 다빈도 질환 ${c.age}대 ${c.gender} 2024"
+- "표적항암치료 비용 급여 비급여 2024"
+
+신뢰도 판단:
+✅ 사용: 국립암센터, 보건복지부, 심평원, 건보공단, 통계청 공식 발표
+⚠️ 주의: 의료기관 자체 발표 (단독 사용 금지, 보조 참고만)
+❌ 금지: 블로그, 보험사 홍보자료, 출처 불명 수치
+
+→ 최신 뉴스 기사 적용 가능 시 함께 첨부, 출처 명시 필수
+→ 주요 내용 포인트 정리 + 전문가 스타일로 추가 설명
+
+【3. 보장 공백 분석 (Gap Analysis)】
+기존 보장 vs 추천 상품 항목별 비교표:
+
+항목 | 기존 가입 | 추천 상품 | 보장 공백/증가
+────────────────────────────────────────────────
+(약관 및 설계안 실제 데이터로 채울 것)
+
+예시 형식:
+  암 진단비       | 2,000만원  | 3,000만원  | +1,000만원 ✅
+  뇌혈관 진단비   | 없음       | 1,500만원  | 신규 보장  ✅
+  실손의료비      | 있음(3세대)| 없음       | 중복 제외  ℹ️
+
+【4. 직업-질병 위험도 매핑】
+고객 직업(${c.job}) 기반으로:
+- 직업 분류 코드 (보험업 직업분류 기준)
+- 해당 직업군 주요 발생 암종/질환 상위 5개
+- 평균 대비 위험도 지수
+- 데이터 출처 명시
+
+【5. 치료 비용 시뮬레이션】
+단계별 구성 — 최소/평균/최대 범위값으로 표현 (단일 금액 단독 사용 금지):
+1. 진단 시: 조직검사, 영상검사
+2. 수술: 종류별 급여/비급여
+3. 항암치료: 표적항암 여부에 따라 분기
+4. 방사선치료 (해당 시)
+5. 입원: 일당 × 예상 기간
+6. 통원: 회당 × 예상 횟수
+7. 재발/전이: 시나리오 추가
+
+→ 이 보험에서 보장받는 금액 매핑
+→ 자기부담 잔액 = 실제 치료비 - 보험 보장액
+
+【6. 보험료 예시 표 (해당 시)】
+보험료 예시가 문서에 있는 경우, 아래 형식의 최신 디자인 테이블로 구성:
+
+| 보험담보 | 가입금액 | 보험료 |
+|----------|----------|--------|
+| (실제 내용) | | |
+
+납입 조건(납입기간, 만기, 연령, 성별, 직업급수)도 함께 표기.
+
+═══════════════════════════════════════════════════════════════
+🎨 출력 형식 지침 — 완성된 HTML 문서를 즉시 전체 출력
+═══════════════════════════════════════════════════════════════
+
+【⚠️ 절대 금지 사항 — 반드시 읽고 준수할 것】
+① "제안서 생성하기", "AI 설계 제안서 생성하기" 등 어떤 버튼도 절대 포함 금지
+② fetch(), XMLHttpRequest, API 호출 등 서버 요청 코드 절대 금지
+③ "버튼 클릭 → 내용 생성" 방식 절대 금지
+④ 앱(App) 또는 도구(Tool) 형태로 출력 금지
+⑤ React, Vue 등 프레임워크 사용 금지
+
+【✅ 반드시 해야 할 것】
+- 지금 즉시 <!DOCTYPE html>부터 </html>까지 완성된 HTML 전체를 한 번에 출력
+- 브라우저에서 파일을 열면 완성된 제안서가 바로 표시되어야 함
+- 모든 분석 내용·보장 정보·통계·설계사 정보가 HTML 안에 완성된 상태로 포함
+- HTML 파일 하나로 고객에게 바로 전달 가능한 완성 문서
+
+【컬러 테마】
+${colorNote}
+
+【사용할 CSS 클래스 구조 (아래를 <style> 태그에 정의하고 사용)】
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Nanum Gothic','나눔고딕',sans-serif; background:#fdf5f8(여성) 또는 #f0f2fa(남성); color:#333; line-height:1.7; max-width:780px; margin:0 auto; padding:20px 16px 60px; }
+
+/* 상단 뱃지 */
+.top-badge { background:linear-gradient(135deg,[메인색],[서브색]); color:#fff; text-align:center; padding:6px 0; font-size:12px; letter-spacing:1.5px; border-radius:6px 6px 0 0; }
+
+/* 히어로 카드 (상단 요약) */
+.hero-card { background:linear-gradient(135deg,[배경색],[흰색]); border:2px solid [서브색]; border-radius:0 0 16px 16px; padding:28px 24px 24px; margin-bottom:20px; text-align:center; }
+.hero-card h1 { font-size:22px; font-weight:800; color:[진한색]; margin-bottom:6px; }
+.price-box { display:inline-block; background:#fff; border:2px solid [서브색]; border-radius:50px; padding:8px 28px; font-size:20px; font-weight:800; color:[진한색]; margin-top:8px; }
+
+/* 섹션 구분 */
+.section-divider { text-align:center; color:[서브색]; font-size:14px; margin:20px 0; letter-spacing:2px; }
+.section-title { font-size:19px; font-weight:800; color:[진한색]; border-left:5px solid [메인색]; padding-left:12px; margin:24px 0 14px; }
+
+/* 정보 박스 */
+.info-box { background:#fff; border:1px solid [연한색]; border-left:4px solid [메인색]; border-radius:10px; padding:16px 18px; margin-bottom:16px; font-size:14px; line-height:1.8; }
+.info-box .label { font-weight:700; color:[진한색]; margin-bottom:4px; font-size:13px; }
+
+/* 하이라이트 박스 */
+.highlight-box { background:linear-gradient(135deg,[배경색],#fff); border:1px dashed [서브색]; border-radius:12px; padding:18px 20px; margin-bottom:16px; font-size:14px; line-height:1.9; }
+.highlight-box .icon-title { font-size:16px; font-weight:800; color:[진한색]; margin-bottom:8px; }
+
+/* 경고 박스 */
+.alert-box { background:[배경색]; border-left:4px solid [메인색]; border-radius:0 10px 10px 0; padding:14px 16px; font-size:13.5px; line-height:1.9; margin-bottom:14px; }
+
+/* 보험료 테이블 */
+.pink-table { width:100%; border-collapse:collapse; font-size:13px; margin-bottom:8px; }
+.pink-table thead tr { background:[메인색]; color:#fff; }
+.pink-table thead th { padding:10px 12px; text-align:center; font-weight:700; }
+.pink-table tbody tr:nth-child(even) { background:[배경색]; }
+.pink-table tbody tr:nth-child(odd) { background:#fff; }
+.pink-table tbody td { padding:9px 12px; text-align:center; border-bottom:1px solid [연한색]; }
+.pink-table tbody td:first-child { text-align:left; font-weight:700; color:[진한색]; }
+.pink-table tfoot tr { background:[배경색]; }
+.pink-table tfoot td { padding:10px 12px; font-weight:800; color:[진한색]; text-align:center; border-top:2px solid [메인색]; }
+
+/* FAQ */
+.faq-wrap { margin-bottom:16px; }
+.faq-item { background:#fff; border:1px solid [연한색]; border-radius:10px; padding:14px 16px; margin-bottom:10px; }
+.faq-q { font-weight:800; color:[진한색]; font-size:14px; margin-bottom:6px; }
+.faq-a { font-size:13.5px; color:#555; padding-left:12px; line-height:1.8; }
+
+/* 서명란 */
+.signature-box { background:linear-gradient(135deg,[배경색],[흰색]); border:2px solid [서브색]; border-radius:14px; padding:22px 24px; margin-top:28px; text-align:center; }
+
+/* 해시태그 */
+.tag-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; }
+.tag { background:[배경색]; color:[진한색]; border-radius:20px; padding:4px 14px; font-size:12px; font-weight:700; }
+
+/* 2컬럼 */
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+.mini-card { background:#fff; border:1px solid [연한색]; border-radius:10px; padding:14px; font-size:13px; line-height:1.8; }
+.mini-card .mc-title { font-weight:800; color:[진한색]; font-size:14px; margin-bottom:6px; border-bottom:1px dashed [연한색]; padding-bottom:5px; }
+
+/* 안내 박스 */
+.notice-box { background:#fff9fb(여성)/f8f9ff(남성); border:1px solid [연한색]; border-radius:10px; padding:14px 16px; font-size:13px; color:#666; line-height:1.8; margin-bottom:16px; }
+
+@media(max-width:500px) { .two-col { grid-template-columns:1fr; } }
+
+【HTML 문서 구조 순서】
+1. <!DOCTYPE html> ~ <head> (Google Fonts: Nanum Gothic 로드)
+2. <body>
+   - .top-badge (보험사명 + 맞춤 제안서)
+   - .hero-card (상품명 h1, 월 보험료, 납입조건, 청약번호 등)
+   - .section-divider (--- 💗 고객님 상황 먼저 살펴볼게요 ---)
+   - .section-title + .info-box × 2~3 (고객 현황: 기본정보, 건강상태, 기존보험/목적)
+   - .section-divider
+   - .section-title + .highlight-box + .alert-box (고객 상황 분석, 통계 데이터 포함)
+   - .section-divider (--- 🌸 가입 보장 내용 한눈에 ---)
+   - .section-title + .pink-table (보장 상세 및 보험료 표)
+   - .notice-box (감액기간·면책사항 등 주의사항)
+   - .section-divider
+   - .section-title + .highlight-box + 수술비 테이블 등 (추가 보장 설명)
+   - .section-divider
+   - .section-title + .two-col .mini-card (납입면제, 특약 요약 등)
+   - [FAQ 섹션 — faq-wrap/faq-item]${faqBlock}
+   - .signature-box (설계사 정보 + 마무리 문구)
+   - .tag-list .tag (해시태그)
+   - JSON-LD script (FAQ 있는 경우)
+3. </body></html>
+
+【문체와 톤】
+  · 친근하고 자연스러운 어조 ("~이에요", "~해요", "~네요")
+  · 1인칭 시점 ("제가", "저도", "제 생각엔")
+  · 짧은 문장 + 긴 문장 혼합
+  · 전문용어 최소화, 쉬운 단어로 풀어 설명
+  · 이모티콘 적절히 활용 (😊 📝 💡 📌 ⚠️)
+  · YMYL 주제이므로 객관적 근거와 데이터 중심 서술
+  · 과도한 마케팅 표현 지양
+
+═══════════════════════════════════════════════════════════════
+🔒 할루시네이션 방지 지침 — CRITICAL (반드시 준수)
+═══════════════════════════════════════════════════════════════
+
+이 단계를 건너뛰면 절대 안 됩니다.
+
+규칙 1: 약관/설계안에 명시된 수치만 사용
+         → 문서에 없는 수치 = 출력 금지
+         → "약 ~만원" 식의 추정 표현 금지
+
+규칙 2: 통계 데이터는 출처 명시 필수
+         → 국립암센터, 심평원, 통계청 등 공식 출처만 사용
+         → 확인 불가 통계 = 사용 금지
+
+규칙 3: 약관 해석은 원문 인용 방식
+         → "약관 제○조에 의거" 형식으로 근거 명시
+         → 해석 여지 있는 조항 → "요청 시 전문가 확인 필요" 표기
+
+규칙 4: 비교 우위 주장은 수치 근거 필수
+         → "A가 더 좋다" → 금지
+         → "A는 B 대비 특약 X에서 500만원 더 높은 보장" → 허용
+
+규칙 5: 치료비 시뮬레이션은 최소/평균/최대 범위로 표현
+         → 단일 금액값 단독 사용 금지
+         → 출처: 건보공단 통계 또는 약관 지급 실적
+
+자체 검열 체크리스트 (1차 작성 후 반드시 확인):
+□ 문서에 없는 수치 사용 여부
+□ 출처 없는 통계 사용 여부
+□ 추정/가정 표현 사용 여부
+□ 수치 없는 비교 우위 주장 여부
+□ 단일 금액값 치료비 시뮬레이션 여부
+
+→ 모두 통과한 경우에만 최종 출력합니다.
+
+═══════════════════════════════════════════════════════════════
+📞 문서 마지막 필수 포함 사항
+═══════════════════════════════════════════════════════════════
+
+문서 맨 마지막에 아래 설계사 정보와 문구를 반드시 포함합니다:
+
+────────────────────────────────────────────────
+담당 설계사 : ${a.name}${a.company ? '\n소속       : '+a.company : ''}${a.phone ? '\n연락처     : '+a.phone : ''}${a.email ? '\n이메일     : '+a.email : ''}${a.license ? '\n설계사 번호: '+a.license : ''}
+
+고객님의 소중한 미래를 함께 준비하고 싶습니다. 😊
+보험료 조정이나 보장 내용에 대해 궁금하신 점이 있으시면
+언제든 편하게 연락 주세요. 작은 것 하나도 꼼꼼하게 함께
+살펴드리겠습니다. 고객님의 상황에 가장 맞는 방법을 찾아드릴게요.
+────────────────────────────────────────────────`;
+}
+
+// ── Download HTML ──
+function downloadHTML(){
+  if(!promptText){ alert('먼저 프롬프트를 생성해주세요.'); return; }
+  const cName = document.getElementById('c_name').value.trim()||'고객';
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('ko-KR');
+  const fname = `보험설계서_프롬프트_${cName}_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.html`;
+
+  const html = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${esc(cName)} 고객 보험제안서 자동생성 | ${dateStr}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Malgun Gothic',sans-serif;background:#f4f6fb;color:#111;line-height:1.85;min-height:100vh}
+/* ── 사람이 보는 안내 영역 (CSS flex order로 시각적으로 최상단에 배치) ── */
+.page{display:flex;flex-direction:column;max-width:900px;margin:0 auto;padding:28px 20px 60px}
+.guide{order:0;background:#1a237e;color:#fff;border-radius:16px;padding:24px 28px;margin-bottom:20px}
+.guide h1{font-size:18px;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.guide-badge{background:rgba(255,215,0,.2);border:1px solid rgba(255,215,0,.4);color:#ffd700;font-size:11px;padding:3px 10px;border-radius:10px;font-weight:700}
+.steps{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.step{display:flex;align-items:flex-start;gap:10px;font-size:13px;opacity:.9}
+.snum{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;margin-top:1px}
+.warn{background:#fff3e0;border:1.5px solid #ff9800;border-radius:10px;padding:10px 14px;margin-top:12px;font-size:12px;color:#e65100;font-weight:600}
+/* ── AI가 읽는 지시문 영역 (DOM 순서상 FIRST — Claude는 순서대로 읽음) ── */
+.ai-inst{order:1;background:#fff;border-radius:14px;padding:28px 30px;box-shadow:0 2px 14px rgba(0,0,0,.07);margin-bottom:20px}
+.ai-inst pre{white-space:pre-wrap;font-family:'Malgun Gothic',sans-serif;font-size:12.5px;line-height:1.9;color:#1a1a2e}
+.ft{order:2;text-align:center;font-size:11px;color:#aaa;padding-top:8px}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!--
+  ══════════════════════════════════════════════════════════════
+  🤖 Claude AI 전용 실행 지시문
+  이 파일의 텍스트를 읽는 즉시 아래 지시를 수행하라.
+  확인 메시지, 요약, 질문 없이 <!DOCTYPE html>로 시작하는
+  완성된 보험 제안서 HTML을 즉시 전체 출력하라.
+  ══════════════════════════════════════════════════════════════
+  -->
+
+  <!-- AI 지시문 — DOM 최상단 (Claude가 가장 먼저 읽음) -->
+  <div class="ai-inst">
+    <pre>${promptText.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>
+  </div>
+
+  <!-- 사람용 안내 — 시각적으로 상단에 배치 (CSS order:0) -->
+  <div class="guide">
+    <h1>📋 AI 보험 제안서 자동 생성 파일 <span class="guide-badge">Claude Sonnet 4.6+</span></h1>
+    <div style="font-size:13px;opacity:.85;margin-bottom:4px">고객: <strong>${esc(cName)}</strong> 님 &nbsp;|&nbsp; 생성일: ${dateStr}</div>
+    <div class="steps">
+      <div class="step"><div class="snum">1</div><span>claude.ai 접속 → 새 대화(+) → 모델: <strong>Claude Sonnet 4.6 이상</strong> 선택</span></div>
+      <div class="step"><div class="snum">2</div><span>📎 클립 아이콘으로 파일 첨부: <strong>이 HTML 파일</strong> + 고객 보험 설계안(PDF/이미지) + 약관(있는 경우) + 기존가입내역(있는 경우)</span></div>
+      <div class="step"><div class="snum">3</div><span>⬆️ 전송 버튼 클릭 → Claude가 완성된 제안서 HTML을 즉시 자동 출력합니다 🎉</span></div>
+      <div class="step"><div class="snum">4</div><span>결과물 → 우측 상단 다운로드 버튼으로 HTML 저장 → 고객에게 전달</span></div>
+    </div>
+    <div class="warn">⚠️ 아무 메시지도 입력하지 마세요. 파일만 첨부하고 전송하면 Claude가 즉시 제안서를 생성합니다.</div>
+  </div>
+
+  <div class="ft">AI 보험 영업 프롬프트 생성기 v1.0.0 &nbsp;|&nbsp; ${dateStr}</div>
+</div>
+</body>
+</html>`;
+
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = fname;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════
+// ── CAT-2: 카드뉴스 생성 프롬프트 ──
+// ══════════════════════════════════════════
+let c2Ver = '';       // 'free' | 'paid'
+let c2Cnt = 4;        // 장수
+let c2Size = '1:1';   // 비율
+let c2SizePx = '1024×1024';
+let c2SizeLabel = '정방형';
+let promptText2 = '';
+
+// GPT 버전 선택
+function setVer(v){
+  c2Ver = v;
+  document.getElementById('vbtn-free').classList.toggle('active', v==='free');
+  document.getElementById('vbtn-free').classList.toggle('free', v==='free');
+  document.getElementById('vbtn-paid').classList.toggle('active', v==='paid');
+  document.getElementById('vbtn-paid').classList.toggle('paid', v==='paid');
+  document.getElementById('vnote-free').classList.toggle('show', v==='free');
+  document.getElementById('vnote-paid').classList.toggle('show', v==='paid');
+  // 워크플로우 탭도 자동 전환
+  if(v) setWFTab(v);
+}
+
+// 카드 장수 선택
+function setCnt(n){
+  document.querySelectorAll('.cnt-btn').forEach(b=>b.classList.remove('active'));
+  const custom = document.getElementById('customCntWrap');
+  if(n==='custom'){
+    document.getElementById('cbtn-c').classList.add('active');
+    custom.classList.add('show');
+    c2Cnt = null;
+  } else {
+    c2Cnt = n;
+    document.getElementById('cbtn-'+n).classList.add('active');
+    custom.classList.remove('show');
+  }
+}
+
+// 이미지 사이즈 선택
+function setSize(ratio, px, label){
+  c2Size = ratio;
+  c2SizePx = px.replace('x', '×'); // x → × 변환
+  c2SizeLabel = label;
+  document.querySelectorAll('.size-opt').forEach(el=>el.classList.remove('active'));
+  const idMap = {'1:1':'sopt-11','4:5':'sopt-45','4:3':'sopt-43','9:16':'sopt-916','16:9':'sopt-169','3:2':'sopt-32'};
+  const el = document.getElementById(idMap[ratio]);
+  if(el) el.classList.add('active');
+}
+
+// 워크플로우 탭
+function setWFTab(v){
+  ['free','paid','init'].forEach(t=>{
+    document.getElementById('wpanel-'+t).classList.toggle('show', t===v);
+  });
+  document.getElementById('wtab-free').classList.toggle('active', v==='free');
+  document.getElementById('wtab-free').classList.toggle('free', v==='free');
+  document.getElementById('wtab-paid').classList.toggle('active', v==='paid');
+  document.getElementById('wtab-paid').classList.toggle('paid', v==='paid');
+}
+
+// 카드뉴스 프롬프트 생성
+function doGenerate2(){
+  if(!agent || !agent.name){ alert('설계사 정보를 먼저 입력해주세요.'); openAgentModal(); return; }
+  if(!c2Ver){ alert('ChatGPT 버전을 선택해주세요.'); return; }
+  // 장수 결정
+  let cnt = c2Cnt;
+  if(!cnt){
+    cnt = parseInt(document.getElementById('c2_cnt_custom').value);
+    if(!cnt||cnt<1||cnt>20){ alert('카드 장수를 1~20 사이로 입력해주세요.'); return; }
+  }
+
+  const verLabel = c2Ver==='free' ? '무료버전 (ChatGPT Free)' : '유료버전 (ChatGPT Plus/Pro)';
+  const verNote  = c2Ver==='free'
+    ? `[무료버전 전용 지침]\n모든 ${cnt}장의 카드를 하나의 이미지 안에 가로로 나란히 배치하여 생성하라.\n각 카드는 동일한 크기로 균등 분할되어야 한다.\n이미지 전체 해상도는 4K 수준으로 최대한 높게 설정하라.`
+    : `[유료버전 전용 지침]\n각 카드를 개별 이미지로 순차적으로 생성하라.\n총 ${cnt}장을 1장씩 개별 생성하여 제공하라.\n각 이미지 해상도는 4K 수준으로 최대한 높게 설정하라.`;
+
+  promptText2 = buildPrompt2(verLabel, verNote, cnt, c2Size, c2SizePx, c2SizeLabel);
+  document.getElementById('promptOut2').textContent = promptText2;
+  const ra = document.getElementById('resultArea2');
+  ra.classList.add('show','fade-up');
+  setTimeout(()=> ra.scrollIntoView({behavior:'smooth', block:'start'}), 100);
+}
+
+// 프롬프트 빌드
+function buildPrompt2(verLabel, verNote, cnt, size, px, label){
+  const agentLine = agent
+    ? `\n마지막 카드에 담당 설계사 정보를 반드시 포함해주세요.\n담당: ${agent.name}${agent.company ? ' / ' + agent.company : ''}${agent.phone ? ' / ' + agent.phone : ''}`
+    : '';
+
+  return `너는 블로그 마케팅 전문가이면서 카드뉴스 전문 기획자야
+
+업로드한 내용을 분석해서 ${cnt}장의 ${size} (${px}) 카드뉴스로 만들어줘
+
+【카드뉴스 디자인 제작원칙】
+· 디자인은 업로드한 카드뉴스 예시 디자인을 참고해주세요
+· 첫번째 페이지는 핵심적인 내용만 나올 수 있는 카피라이팅으로 채워주세요!!
+· 텍스트가 너무 많이 나오지 않도록 해주세요!!
+· 해상도는 4K로 나오게 해주세요
+· 예시 디자인의 경우 컬러 배치와 기획방식을 참고해주세요!
+· 단, 내용과 불일치하는 이모지나 그림 등은 내용과 일치하는 이모지나 그림으로 변경해주세요!
+· 카드뉴스에는 01, 02와 같이 카운팅 숫자를 넣지 말아주세요!!
+
+【생성 방식 — ${verLabel}】
+${verNote}${agentLine}`;
+}
+
+// 카드뉴스 프롬프트 복사
+function copyPrompt2(){
+  if(!promptText2){ alert('먼저 프롬프트를 생성해주세요.'); return; }
+  const btn = document.getElementById('copyBtn2');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(promptText2).then(function(){
+      btn.textContent = '✅ 복사 완료!';
+      btn.style.background = '#4caf50';
+      showToast('📋 프롬프트가 복사되었습니다!', '#4caf50');
+      setTimeout(function(){ btn.textContent = '📋 프롬프트 복사하기'; btn.style.background = ''; }, 2500);
+    }).catch(function(){ fallbackCopy2(btn); });
+  } else {
+    fallbackCopy2(btn);
+  }
+}
+function fallbackCopy2(btn){
+  const ta = document.createElement('textarea');
+  ta.value = promptText2;
+  ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try {
+    document.execCommand('copy');
+    btn.textContent = '✅ 복사 완료!';
+    btn.style.background = '#4caf50';
+    showToast('📋 프롬프트가 복사되었습니다!', '#4caf50');
+    setTimeout(function(){ btn.textContent = '📋 프롬프트 복사하기'; btn.style.background = ''; }, 2500);
+  } catch(e) {
+    showToast('복사 실패 — 텍스트를 직접 선택하여 복사해주세요.', '#ef4444');
+  }
+  document.body.removeChild(ta);
+}
+
+// (구버전 호환) downloadHTML2
+function downloadHTML2(){
+  if(!promptText2){ alert('먼저 프롬프트를 생성해주세요.'); return; }
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('ko-KR');
+  const fname = `카드뉴스_프롬프트_${c2Size.replace(':','-')}비율_${c2Cnt}장_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.html`;
+  const verLabel = c2Ver==='free' ? '무료버전' : '유료버전 (Plus/Pro)';
+  const modelNote = c2Ver==='free'
+    ? 'GPT-4o (기본 모델) 사용 — 추론 모델 선택 불필요'
+    : 'o1 · o3 등 <strong>추론(Reasoning) 모델 선택 권장</strong>';
+
+  const html = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>카드뉴스 자동생성 프롬프트 | ${c2Size} ${c2Cnt}장 | ${dateStr}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Malgun Gothic',sans-serif;background:#f4f6fb;color:#111;line-height:1.85;min-height:100vh}
+.page{display:flex;flex-direction:column;max-width:900px;margin:0 auto;padding:28px 20px 60px}
+.guide{order:0;background:linear-gradient(135deg,#1a237e,#283593);color:#fff;border-radius:16px;padding:24px 28px;margin-bottom:20px}
+.guide h1{font-size:17px;font-weight:800;margin-bottom:10px}
+.g-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.g-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700}
+.g-badge span{opacity:.7;font-weight:400}
+.steps{display:flex;flex-direction:column;gap:8px}
+.step{display:flex;align-items:flex-start;gap:10px;font-size:13px;opacity:.9}
+.sn{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;margin-top:1px}
+.warn{background:#fff3e0;border:1.5px solid #ff9800;border-radius:10px;padding:10px 14px;margin-top:12px;font-size:12px;color:#e65100;font-weight:600}
+.ai-inst{order:1;background:#fff;border-radius:14px;padding:28px 30px;box-shadow:0 2px 14px rgba(0,0,0,.07);margin-bottom:20px}
+.ai-inst pre{white-space:pre-wrap;font-family:'Malgun Gothic',sans-serif;font-size:12.5px;line-height:1.9;color:#1a1a2e}
+.ft{order:2;text-align:center;font-size:11px;color:#aaa;padding-top:8px}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- AI 지시문 — DOM 최상단 -->
+  <div class="ai-inst">
+    <pre>${promptText2.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>
+  </div>
+
+  <!-- 사람용 안내 (CSS order:0 으로 시각적 최상단) -->
+  <div class="guide">
+    <h1>🗞️ ChatGPT 카드뉴스 자동 생성 파일</h1>
+    <div class="g-row">
+      <div class="g-badge">버전: <span>${verLabel}</span></div>
+      <div class="g-badge">카드 장수: <span>${c2Cnt}장</span></div>
+      <div class="g-badge">사이즈: <span>${c2Size} (${c2SizePx})</span></div>
+      <div class="g-badge">생성일: <span>${dateStr}</span></div>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><span>핀터레스트(pinterest.co.kr) → '카드뉴스' 검색 → 참고 디자인 이미지 캡처/저장</span></div>
+      <div class="step"><div class="sn">2</div><span>chat.openai.com 접속 → 새 대화(+) 시작 — 모델: <strong>${modelNote}</strong></span></div>
+      <div class="step"><div class="sn">3</div><span>📎 클립으로 파일 첨부: ① 이 HTML 파일 &nbsp;② 보험 제안서 HTML &nbsp;③ Pinterest 디자인 이미지</span></div>
+      <div class="step"><div class="sn">4</div><span>⬆️ 아무 메시지 없이 전송 → ChatGPT가 즉시 카드뉴스 생성 시작 🎉</span></div>
+      ${c2Ver==='free' ? '<div class="step"><div class="sn">5</div><span>생성된 이미지 스크린샷 → 이미지 편집으로 카드별로 잘라 PNG/JPG 저장</span></div>' : '<div class="step"><div class="sn">5</div><span>각 카드 이미지 우측 ⬇ 버튼으로 개별 다운로드</span></div>'}
+    </div>
+    <div class="warn">⚠️ Claude AI가 아닌 <strong>ChatGPT(chat.openai.com)</strong>에 업로드하세요.</div>
+  </div>
+
+  <div class="ft">AI 보험 영업 프롬프트 생성기 v1.0.0 &nbsp;|&nbsp; 카드뉴스 모듈 &nbsp;|&nbsp; ${dateStr}</div>
+</div>
+</body>
+</html>`;
+
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = fname;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════
+// ── API 설정 ──
+// ══════════════════════════════════════════
+let apiSettings = { type: '', geminiKey: '', claudeKey: '' };
+let _apiGeneratedHtml = '';
+let _apiCustomerName = '';
+
+(function initApi(){
+  const s = localStorage.getItem('ins_api');
+  if(s){ try{ apiSettings = JSON.parse(s); }catch(e){} }
+  updateApiBar();
+})();
+
+function updateApiBar(){
+  const hasKey = (apiSettings.type==='gemini' && apiSettings.geminiKey) ||
+                 (apiSettings.type==='claude' && apiSettings.claudeKey);
+  const dot = document.getElementById('apiDot');
+  const label = document.getElementById('apiLabel');
+  const btnApi = document.getElementById('btnApiGen');
+  const apiNote = document.getElementById('apiModeNote');
+  const planField = document.getElementById('apiPlanField');
+
+  if(dot) dot.classList.toggle('on', hasKey);
+  if(label){
+    if(hasKey){
+      const typeName = apiSettings.type==='gemini' ? '🆓 Gemini 무료 API' : '⭐ Claude API';
+      label.innerHTML = typeName + ' 연결됨<br><span style="font-size:9px;opacity:.7">클릭하여 변경</span>';
+    } else {
+      label.innerHTML = 'AI API 미설정<br><span style="font-size:9px;opacity:.7">연결하면 앱에서 직접 생성 가능</span>';
+    }
+  }
+  if(btnApi){ btnApi.style.display = hasKey ? 'inline-flex' : 'none'; }
+  if(apiNote){ apiNote.style.display = hasKey ? 'block' : 'none'; }
+  if(planField){ planField.style.display = hasKey ? 'block' : 'none'; }
+}
+
+function openApiModal(){
+  document.getElementById('inp_gemini_key').value = apiSettings.geminiKey || '';
+  document.getElementById('inp_claude_key').value = apiSettings.claudeKey || '';
+  selectApiType(apiSettings.type || 'gemini');
+  document.getElementById('apiModal').classList.add('show');
+}
+function closeApiModal(){
+  document.getElementById('apiModal').classList.remove('show');
+}
+function selectApiType(t){
+  document.getElementById('apiOptGemini').className = 'api-type-opt' + (t==='gemini' ? ' sel-gemini' : '');
+  document.getElementById('apiOptClaude').className = 'api-type-opt' + (t==='claude' ? ' sel-claude' : '');
+  document.getElementById('geminiKeySection').style.display = t==='gemini' ? 'block' : 'none';
+  document.getElementById('claudeKeySection').style.display = t==='claude' ? 'block' : 'none';
+}
+function saveApiSettings(){
+  const type = document.getElementById('apiOptGemini').classList.contains('sel-gemini') ? 'gemini' : 'claude';
+  const geminiKey = document.getElementById('inp_gemini_key').value.trim();
+  const claudeKey = document.getElementById('inp_claude_key').value.trim();
+
+  if(type==='gemini' && !geminiKey){ alert('Gemini API 키를 입력해주세요.'); return; }
+  if(type==='claude' && !claudeKey){ alert('Claude API 키를 입력해주세요.'); return; }
+
+  apiSettings = { type, geminiKey, claudeKey };
+  localStorage.setItem('ins_api', JSON.stringify(apiSettings));
+  updateApiBar();
+  closeApiModal();
+  // 저장 완료 토스트
+  showToast('✅ API 설정이 저장되었습니다!', '#4caf50');
+}
+function clearApiSettings(){
+  apiSettings = { type:'', geminiKey:'', claudeKey:'' };
+  localStorage.removeItem('ins_api');
+  updateApiBar();
+  closeApiModal();
+  showToast('API 연결이 해제되었습니다.', '#888');
+}
+document.getElementById('apiModal').addEventListener('click', e=>{
+  if(e.target===document.getElementById('apiModal')) closeApiModal();
+});
+
+// ── API 직접 생성 (Cat-1) ──
+async function doGenerateApi(){
+  if(!agent||!agent.name){ alert('설계사 정보를 먼저 입력해주세요.'); openAgentModal(); return; }
+  const name = document.getElementById('c_name').value.trim();
+  const age  = document.getElementById('c_age').value.trim();
+  const gender = document.querySelector('input[name="gender"]:checked')?.value||'';
+  const job  = document.getElementById('c_job').value.trim();
+  if(!name||!age||!gender||!job){ alert('고객 이름, 나이, 성별, 직업은 필수입니다.'); return; }
+
+  const planText = document.getElementById('c_plan_text').value.trim();
+  if(!planText){ alert('보험 설계안 내용을 붙여넣어 주세요.'); return; }
+
+  const ci = {
+    name, age, gender, job,
+    health : document.getElementById('c_health').value.trim()||'미입력',
+    cur    : document.getElementById('c_cur').value.trim()||'미입력',
+    purpose: document.getElementById('c_purpose').value.trim()||'미입력',
+    budget : document.getElementById('c_budget').value.trim()||'미입력',
+    family : document.getElementById('c_family').value.trim()||'미입력',
+    notes  : document.getElementById('c_notes').value.trim()||'미입력'
+  };
+  const faq = document.getElementById('includeFAQ').checked;
+  const fullPrompt = buildPrompt(agent, ci, faq) + '\n\n【보험 설계안 원문 내용】\n' + planText;
+
+  setApiLoading(true);
+  document.getElementById('apiResultWrap').classList.remove('show');
+  try {
+    let result = apiSettings.type==='gemini' ? await callGeminiAPI(fullPrompt) : await callClaudeAPI(fullPrompt);
+    // HTML 코드 추출
+    const m = result.match(/```html\s*([\s\S]*?)```/i);
+    if(m) result = m[1].trim();
+    result = result.trim();
+    if(!result.toLowerCase().includes('<!doctype') && !result.toLowerCase().includes('<html')){
+      result = '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"></head><body>' + result + '</body></html>';
+    }
+    _apiGeneratedHtml = result;
+    _apiCustomerName  = name;
+    showApiResult(result);
+  } catch(err){
+    alert('❌ API 오류: ' + err.message + '\n\nAPI 키를 확인하거나 잠시 후 다시 시도해주세요.');
+  } finally {
+    setApiLoading(false);
+  }
+}
+function setApiLoading(show){
+  document.getElementById('apiLoading').classList.toggle('show', show);
+  const btn = document.getElementById('btnApiGen');
+  if(btn){ btn.disabled = show; btn.innerHTML = show ? '<span class="spinner"></span>생성 중...' : '🤖 AI 직접 생성'; }
+}
+function showApiResult(html){
+  document.getElementById('apiResultPreview').textContent = html.substring(0, 2000) + (html.length>2000 ? '\n\n... (이하 생략, 다운로드로 전체 확인)' : '');
+  const wrap = document.getElementById('apiResultWrap');
+  wrap.classList.add('show');
+  setTimeout(()=>wrap.scrollIntoView({behavior:'smooth',block:'start'}), 100);
+}
+document.getElementById('btnApiDownload').addEventListener('click', function(){
+  if(!_apiGeneratedHtml){ alert('먼저 AI 직접 생성을 실행해주세요.'); return; }
+  const now = new Date();
+  const fname = `보험제안서_${_apiCustomerName}_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.html`;
+  const blob = new Blob([_apiGeneratedHtml], {type:'text/html;charset=utf-8'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href=url; a.download=fname;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+// ── Gemini API 호출 ──
+async function callGeminiAPI(prompt){
+  const key = apiSettings.geminiKey;
+  if(!key) throw new Error('Gemini API 키가 설정되지 않았습니다.');
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+  const res = await fetch(url, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      contents:[{parts:[{text:prompt}]}],
+      generationConfig:{temperature:0.7, maxOutputTokens:8192}
+    })
+  });
+  if(!res.ok){
+    const e = await res.json().catch(()=>({}));
+    throw new Error(e.error?.message || `Gemini 오류 (HTTP ${res.status})`);
+  }
+  const data = await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+// ── Claude API 호출 ──
+async function callClaudeAPI(prompt){
+  const key = apiSettings.claudeKey;
+  if(!key) throw new Error('Claude API 키가 설정되지 않았습니다.');
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key': key,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body: JSON.stringify({
+      model:'claude-sonnet-4-6',
+      max_tokens:8192,
+      messages:[{role:'user', content:prompt}]
+    })
+  });
+  if(!res.ok){
+    const e = await res.json().catch(()=>({}));
+    throw new Error(e.error?.message || `Claude 오류 (HTTP ${res.status})`);
+  }
+  const data = await res.json();
+  return data.content?.[0]?.text || '';
+}
+
+// ── Toast ──
+function showToast(msg, color){
+  let t = document.getElementById('_toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = '_toast';
+    t.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:#333;color:#fff;padding:12px 24px;border-radius:50px;font-size:13px;font-weight:700;z-index:9999;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.background = color || '#333';
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(t._tid);
+  t._tid = setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(20px)'; }, 2500);
+}
+
+// ── Helpers ──
+function esc(s){
+  if(!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── CAT-2 이벤트 리스너 (data-action 방식) ──
+document.getElementById('cat-2').addEventListener('click', function(e){
+  const btn = e.target.closest('[data-action]');
+  if(!btn) return;
+  const action = btn.dataset.action;
+  const val    = btn.dataset.val;
+
+  if(action === 'ver'){
+    setVer(val);
+  } else if(action === 'cnt'){
+    setCnt(val === '4' ? 4 : val === '6' ? 6 : 'custom');
+  } else if(action === 'size'){
+    setSize(btn.dataset.ratio, btn.dataset.px, btn.dataset.label);
+  } else if(action === 'wftab'){
+    setWFTab(val);
+  }
+});
+document.getElementById('btnGen2').addEventListener('click', doGenerate2);
+document.getElementById('copyBtn2').addEventListener('click', copyPrompt2);
+
+// Prevent copy from prompt preview
+document.addEventListener('keydown', e => {
+  const pp = document.getElementById('promptOut');
+  if(!pp) return;
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='c'){
+    const sel = window.getSelection();
+    if(sel && pp.contains(sel.anchorNode)){
+      e.preventDefault();
+    }
+  }
+});
+</script>
+</body>
+</html>
